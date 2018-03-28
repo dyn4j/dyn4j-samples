@@ -24,12 +24,21 @@
  */
 package org.dyn4j.samples;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.dyn4j.dynamics.Body;
+import org.dyn4j.dynamics.Step;
+import org.dyn4j.dynamics.StepAdapter;
+import org.dyn4j.dynamics.World;
+import org.dyn4j.dynamics.contact.ContactAdapter;
+import org.dyn4j.dynamics.contact.ContactPoint;
+import org.dyn4j.dynamics.contact.PersistedContactPoint;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.samples.framework.SimulationBody;
@@ -38,8 +47,14 @@ import org.dyn4j.samples.framework.SimulationFrame;
 /**
  * A simple scene of a circle that is controlled by the left and
  * right arrow keys that is moved by applying torques and forces.
+ * <p>
+ * Also illustrated here is how to track whether the body is in
+ * contact with the "ground."
+ * <p>
+ * Always keep in mind that this is just an example, production
+ * code should be more robust and better organized.
  * @author William Bittle
- * @since 3.2.1
+ * @since 3.2.5
  * @version 3.2.0
  */
 public class SimplePlatformer extends SimulationFrame {
@@ -61,6 +76,11 @@ public class SimplePlatformer extends SimulationFrame {
 	
 	private final AtomicBoolean leftPressed = new AtomicBoolean(false);
 	private final AtomicBoolean rightPressed = new AtomicBoolean(false);
+	private final AtomicBoolean isOnGround = new AtomicBoolean(false);
+	
+	private static final Color WHEEL_OFF_COLOR = Color.MAGENTA;
+	private static final Color WHEEL_ON_COLOR = Color.GREEN;
+	private static final Object FLOOR_BODY = new Object();
 	
 	/**
 	 * Custom key adapter to listen for key events.
@@ -104,6 +124,7 @@ public class SimplePlatformer extends SimulationFrame {
 		floor.addFixture(Geometry.createRectangle(50.0, 0.2));
 		floor.setMass(MassType.INFINITE);
 		floor.translate(0, -3);
+		floor.setUserData(FLOOR_BODY);
 		this.world.addBody(floor);
 		
 		// some obstacles
@@ -115,6 +136,7 @@ public class SimplePlatformer extends SimulationFrame {
 			sb.addFixture(Geometry.createIsoscelesTriangle(w, h));
 			sb.translate((Math.random() > 0.5 ? -1 : 1) * Math.random() * 5.0, h * 0.5 - 2.9);
 			sb.setMass(MassType.INFINITE);
+			sb.setUserData(FLOOR_BODY);
 			this.world.addBody(sb);
 		}
 		
@@ -124,6 +146,7 @@ public class SimplePlatformer extends SimulationFrame {
 		right.setMass(MassType.INFINITE);
 		right.translate(10, 7);
 		this.world.addBody(right);
+		
 		SimulationBody left = new SimulationBody();
 		left.addFixture(Geometry.createRectangle(0.2, 20));
 		left.setMass(MassType.INFINITE);
@@ -131,11 +154,60 @@ public class SimplePlatformer extends SimulationFrame {
 		this.world.addBody(left);
 		
 		// the wheel
-		wheel = new SimulationBody();
+		wheel = new SimulationBody(WHEEL_OFF_COLOR);
 		// NOTE: lots of friction to simulate a sticky tire
 		wheel.addFixture(Geometry.createCircle(0.5), 1.0, 20.0, 0.1);
 		wheel.setMass(MassType.NORMAL);
 		this.world.addBody(wheel);
+		
+		this.world.addListener(new StepAdapter() {
+			@Override
+			public void begin(Step step, World world) {
+				// at the beginning of each world step, check if the body is in
+				// contact with any of the floor bodies
+				boolean isGround = false;
+				List<Body> bodies =  wheel.getInContactBodies(false);
+				for (int i = 0; i < bodies.size(); i++) {
+					if (bodies.get(i).getUserData() == FLOOR_BODY) {
+						isGround = true;
+						break;
+					}
+				}
+				
+				if (!isGround) {
+					// if not, then set the flag, and update the color
+					isOnGround.set(false);					
+				}
+			}
+		});
+		
+		// then, when a contact is created between two bodies, check if the bodies
+		// are floor and wheel, if so, then set the color and flag
+		this.world.addListener(new ContactAdapter() {
+			private boolean isContactWithFloor(ContactPoint point) {
+				if ((point.getBody1() == wheel || point.getBody2() == wheel) &&
+					(point.getBody1().getUserData() == FLOOR_BODY || point.getBody2().getUserData() == FLOOR_BODY)) {
+					return true;
+				}
+				return false;
+			}
+			
+			@Override
+			public boolean persist(PersistedContactPoint point) {
+				if (isContactWithFloor(point)) {
+					isOnGround.set(true);
+				}
+				return super.persist(point);
+			}
+			
+			@Override
+			public boolean begin(ContactPoint point) {
+				if (isContactWithFloor(point)) {
+					isOnGround.set(true);
+				}
+				return super.begin(point);
+			}
+		});
 	}
 	
 	/* (non-Javadoc)
@@ -150,7 +222,11 @@ public class SimplePlatformer extends SimulationFrame {
 		if (this.rightPressed.get()) {
 			wheel.applyTorque(-Math.PI / 2);
 		}
-		
+		if (this.isOnGround.get()) {
+			wheel.setColor(WHEEL_ON_COLOR);
+		} else {
+			wheel.setColor(WHEEL_OFF_COLOR);
+		}
 		super.update(g, elapsedTime);
 	}
 	

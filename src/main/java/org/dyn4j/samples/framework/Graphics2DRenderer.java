@@ -353,4 +353,15 @@ public final class Graphics2DRenderer {
 		Color oc = color.darker();
 		return new Color(oc.getRed(), oc.getGreen(), oc.getBlue(), color.getAlpha());
 	}
+	
+	/**
+	 * Returns a random color.
+	 * @return Color
+	 */
+	public static final Color getRandomColor() {
+		return new Color(
+				(float)Math.random() * 0.5f + 0.5f,
+				(float)Math.random() * 0.5f + 0.5f,
+				(float)Math.random() * 0.5f + 0.5f);
+	}
 }

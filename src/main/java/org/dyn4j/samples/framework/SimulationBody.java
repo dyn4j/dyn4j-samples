@@ -23,11 +23,7 @@ public class SimulationBody extends Body {
 	 * Default constructor.
 	 */
 	public SimulationBody() {
-		// randomly generate the color
-		this.color = new Color(
-				(float)Math.random() * 0.5f + 0.5f,
-				(float)Math.random() * 0.5f + 0.5f,
-				(float)Math.random() * 0.5f + 0.5f);
+		this.color = Graphics2DRenderer.getRandomColor();
 	}
 	
 	/**
@@ -118,5 +114,13 @@ public class SimulationBody extends Body {
 	 */
 	public Color getColor() {
 		return this.color;
+	}
+	
+	/**
+	 * Sets the body's color
+	 * @param color the color
+	 */
+	public void setColor(Color color) {
+		this.color = color;
 	}
 }
