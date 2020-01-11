@@ -170,7 +170,7 @@ public class Thrust extends SimulationFrame {
 		final double scale = this.scale;
 		final double force = 1000 * elapsedTime;
 		
-        final Vector2 r = new Vector2(ship.getTransform().getRotation() + Math.PI * 0.5);
+        final Vector2 r = new Vector2(ship.getTransform().getRotationAngle() + Math.PI * 0.5);
         final Vector2 c = ship.getWorldCenter();
 		
 		// apply thrust

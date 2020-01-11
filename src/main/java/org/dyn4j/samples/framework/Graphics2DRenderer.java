@@ -173,7 +173,7 @@ public final class Graphics2DRenderer {
 	 */
 	public static final void render(Graphics2D g, Capsule capsule, double scale, Color color) {
 		// get the local rotation and translation
-		double rotation = capsule.getRotation();
+		double rotation = capsule.getRotationAngle();
 		Vector2 center = capsule.getCenter();
 		
 		// save the old transform
@@ -232,7 +232,7 @@ public final class Graphics2DRenderer {
 	 */
 	public static final void render(Graphics2D g, Ellipse ellipse, double scale, Color color) {
 		// get the local rotation and translation
-		double rotation = ellipse.getRotation();
+		double rotation = ellipse.getRotationAngle();
 		Vector2 center = ellipse.getCenter();
 		
 		// save the old transform
@@ -271,7 +271,7 @@ public final class Graphics2DRenderer {
 		double theta2 = slice.getTheta() * 0.5;
 		
 		// get the local rotation and translation
-		double rotation = slice.getRotation();
+		double rotation = slice.getRotationAngle();
 		Vector2 circleCenter = slice.getCircleCenter();
 		
 		// save the old transform
@@ -313,7 +313,7 @@ public final class Graphics2DRenderer {
 		double height = halfEllipse.getHeight();
 		
 		// get the local rotation and translation
-		double rotation = halfEllipse.getRotation();
+		double rotation = halfEllipse.getRotationAngle();
 		Vector2 center = halfEllipse.getEllipseCenter();
 		
 		// save the old transform

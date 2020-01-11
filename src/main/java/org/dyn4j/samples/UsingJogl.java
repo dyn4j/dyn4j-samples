@@ -103,7 +103,7 @@ public class UsingJogl extends JFrame implements GLEventListener {
 			// transform the coordinate system from world coordinates to local coordinates	
 			gl.glTranslated(this.transform.getTranslationX(), this.transform.getTranslationY(), 0.0);
 			// rotate about the z-axis
-			gl.glRotated(Math.toDegrees(this.transform.getRotation()), 0.0, 0.0, 1.0);
+			gl.glRotated(Math.toDegrees(this.transform.getRotationAngle()), 0.0, 0.0, 1.0);
 			
 			// loop over all the body fixtures for this body
 			for (BodyFixture fixture : this.fixtures) {

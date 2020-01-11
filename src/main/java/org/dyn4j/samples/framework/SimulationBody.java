@@ -63,7 +63,7 @@ public class SimulationBody extends Body {
 		// transform the coordinate system from world coordinates to local coordinates
 		AffineTransform lt = new AffineTransform();
 		lt.translate(this.transform.getTranslationX() * scale, this.transform.getTranslationY() * scale);
-		lt.rotate(this.transform.getRotation());
+		lt.rotate(this.transform.getRotationAngle());
 		
 		// apply the transform
 		g.transform(lt);

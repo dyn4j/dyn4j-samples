@@ -106,7 +106,7 @@ public class UsingGraphics2D extends JFrame {
 			// transform the coordinate system from world coordinates to local coordinates
 			AffineTransform lt = new AffineTransform();
 			lt.translate(this.transform.getTranslationX() * SCALE, this.transform.getTranslationY() * SCALE);
-			lt.rotate(this.transform.getRotation());
+			lt.rotate(this.transform.getRotationAngle());
 			
 			// apply the transform
 			g.transform(lt);

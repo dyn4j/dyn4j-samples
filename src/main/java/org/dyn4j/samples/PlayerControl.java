@@ -163,7 +163,7 @@ public class PlayerControl extends SimulationFrame {
 				Vector2 p = this.toWorldCoordinates(this.movedPoint);
 				
 				// set the desired position
-				double angle = this.controller.getTransform().getRotation();
+				double angle = this.controller.getTransform().getRotationAngle();
 				Transform tx = new Transform();
 				tx.translate(p);
 				tx.rotate(angle, p);
