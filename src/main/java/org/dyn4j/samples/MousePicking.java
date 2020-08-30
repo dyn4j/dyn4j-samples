@@ -33,7 +33,7 @@ import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.dyn4j.dynamics.DetectResult;
+import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Convex;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
@@ -42,6 +42,8 @@ import org.dyn4j.geometry.Vector2;
 import org.dyn4j.samples.framework.Graphics2DRenderer;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
+import org.dyn4j.world.DetectFilter;
+import org.dyn4j.world.result.ConvexDetectResult;
 
 /**
  * A simple scene showing how to determine if the mouse touched
@@ -64,7 +66,7 @@ public class MousePicking extends SimulationFrame {
 	private Vector2 worldPoint = new Vector2();
 	
 	/** The picking results */
-	private List<DetectResult> results = new ArrayList<DetectResult>();
+	private List<ConvexDetectResult<SimulationBody, BodyFixture>> results = new ArrayList<ConvexDetectResult<SimulationBody, BodyFixture>>();
 	
 	/**
 	 * A custom mouse adapter for listening for mouse clicks.
@@ -208,14 +210,10 @@ public class MousePicking extends SimulationFrame {
 			transform.translate(x, y);
 			
 			// detect bodies under the mouse pointer
-			this.world.detect(
+			this.results = this.world.detect(
 					convex, 
 					transform,
-					null,			// no, don't filter anything using the Filters 
-					false,			// include sensor fixtures 
-					false,			// include inactive bodies
-					false,			// we don't need collision info 
-					this.results);
+					new DetectFilter<SimulationBody, BodyFixture>(false, false, null));
 			
 			// you could also iterate over the bodies and do a point in body test
 //			for (int i = 0; i < this.world.getBodyCount(); i++) {
@@ -251,8 +249,8 @@ public class MousePicking extends SimulationFrame {
 		Color color = body.getColor();
 		
 		// change the color of the shape if its been picked
-		for (DetectResult result : this.results) {
-			SimulationBody sbr = (SimulationBody) result.getBody();
+		for (ConvexDetectResult<SimulationBody, BodyFixture> result : this.results) {
+			SimulationBody sbr = result.getBody();
 			if (sbr == body) {
 				color = Color.MAGENTA;
 				break;

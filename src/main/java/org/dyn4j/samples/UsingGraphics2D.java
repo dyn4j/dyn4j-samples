@@ -40,11 +40,13 @@ import javax.swing.UnsupportedLookAndFeelException;
 
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.dynamics.World;
+import org.dyn4j.dynamics.Settings;
+import org.dyn4j.world.World;
 import org.dyn4j.geometry.Capsule;
 import org.dyn4j.geometry.Circle;
 import org.dyn4j.geometry.Convex;
 import org.dyn4j.geometry.Geometry;
+import org.dyn4j.geometry.Mass;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Polygon;
 import org.dyn4j.geometry.Rectangle;
@@ -127,7 +129,7 @@ public class UsingGraphics2D extends JFrame {
 	protected Canvas canvas;
 	
 	/** The dynamics engine */
-	protected World world;
+	protected World<Body> world;
 	
 	/** Wether the example is stopped or not */
 	protected boolean stopped;
@@ -190,111 +192,376 @@ public class UsingGraphics2D extends JFrame {
 	 */
 	protected void initializeWorld() {
 		// create the world
-		this.world = new World();
+		this.world = new World<Body>();
 		
 		// create all your bodies/joints
 		
-		// create the floor
-		Rectangle floorRect = new Rectangle(15.0, 1.0);
-		GameObject floor = new GameObject();
-		floor.addFixture(new BodyFixture(floorRect));
-		floor.setMass(MassType.INFINITE);
-		// move the floor down a bit
-		floor.translate(0.0, -4.0);
-		this.world.addBody(floor);
+		boolean old = false;
 		
-		// create a triangle object
-		Triangle triShape = new Triangle(
-				new Vector2(0.0, 0.5), 
-				new Vector2(-0.5, -0.5), 
-				new Vector2(0.5, -0.5));
-		GameObject triangle = new GameObject();
-		triangle.addFixture(triShape);
-		triangle.setMass(MassType.NORMAL);
-		triangle.translate(-1.0, 2.0);
-		// test having a velocity
-		triangle.getLinearVelocity().set(5.0, 0.0);
-		this.world.addBody(triangle);
-		
-		// create a circle
-		Circle cirShape = new Circle(0.5);
-		GameObject circle = new GameObject();
-		circle.addFixture(cirShape);
-		circle.setMass(MassType.NORMAL);
-		circle.translate(2.0, 2.0);
-		// test adding some force
-		circle.applyForce(new Vector2(-100.0, 0.0));
-		// set some linear damping to simulate rolling friction
-		circle.setLinearDamping(0.05);
-		this.world.addBody(circle);
-		
-		// try a rectangle
-		Rectangle rectShape = new Rectangle(1.0, 1.0);
-		GameObject rectangle = new GameObject();
-		rectangle.addFixture(rectShape);
-		rectangle.setMass(MassType.NORMAL);
-		rectangle.translate(0.0, 2.0);
-		rectangle.getLinearVelocity().set(-5.0, 0.0);
-		this.world.addBody(rectangle);
-		
-		// try a polygon with lots of vertices
-		Polygon polyShape = Geometry.createUnitCirclePolygon(10, 1.0);
-		GameObject polygon = new GameObject();
-		polygon.addFixture(polyShape);
-		polygon.setMass(MassType.NORMAL);
-		polygon.translate(-2.5, 2.0);
-		// set the angular velocity
-		polygon.setAngularVelocity(Math.toRadians(-20.0));
-		this.world.addBody(polygon);
-		
-		// try a compound object
-		Circle c1 = new Circle(0.5);
-		BodyFixture c1Fixture = new BodyFixture(c1);
-		c1Fixture.setDensity(0.5);
-		Circle c2 = new Circle(0.5);
-		BodyFixture c2Fixture = new BodyFixture(c2);
-		c2Fixture.setDensity(0.5);
-		Rectangle rm = new Rectangle(2.0, 1.0);
-		// translate the circles in local coordinates
-		c1.translate(-1.0, 0.0);
-		c2.translate(1.0, 0.0);
-		GameObject capsule = new GameObject();
-		capsule.addFixture(c1Fixture);
-		capsule.addFixture(c2Fixture);
-		capsule.addFixture(rm);
-		capsule.setMass(MassType.NORMAL);
-		capsule.translate(0.0, 4.0);
-		this.world.addBody(capsule);
-		
-		GameObject issTri = new GameObject();
-		issTri.addFixture(Geometry.createIsoscelesTriangle(1.0, 3.0));
-		issTri.setMass(MassType.NORMAL);
-		issTri.translate(2.0, 3.0);
-		this.world.addBody(issTri);
-		
-		GameObject equTri = new GameObject();
-		equTri.addFixture(Geometry.createEquilateralTriangle(2.0));
-		equTri.setMass(MassType.NORMAL);
-		equTri.translate(3.0, 3.0);
-		this.world.addBody(equTri);
-		
-		GameObject rightTri = new GameObject();
-		rightTri.addFixture(Geometry.createRightTriangle(2.0, 1.0));
-		rightTri.setMass(MassType.NORMAL);
-		rightTri.translate(4.0, 3.0);
-		this.world.addBody(rightTri);
-		
-		GameObject cap = new GameObject();
-		cap.addFixture(new Capsule(1.0, 0.5));
-		cap.setMass(MassType.NORMAL);
-		cap.translate(-3.0, 3.0);
-		this.world.addBody(cap);
-		
-		GameObject slice = new GameObject();
-		slice.addFixture(new Slice(0.5, Math.toRadians(120)));
-		slice.setMass(MassType.NORMAL);
-		slice.translate(-3.0, 3.0);
-		this.world.addBody(slice);
+		if (old) {
+			// create the floor
+			Rectangle floorRect = new Rectangle(15.0, 1.0);
+			GameObject floor = new GameObject();
+			floor.addFixture(new BodyFixture(floorRect));
+			floor.setMass(MassType.INFINITE);
+			// move the floor down a bit
+			floor.translate(0.0, -4.0);
+			this.world.addBody(floor);
+			
+			// create a triangle object
+			Triangle triShape = new Triangle(
+					new Vector2(0.0, 0.5), 
+					new Vector2(-0.5, -0.5), 
+					new Vector2(0.5, -0.5));
+			GameObject triangle = new GameObject();
+			triangle.addFixture(triShape);
+			triangle.setMass(MassType.NORMAL);
+			triangle.translate(-1.0, 2.0);
+			// test having a velocity
+			triangle.getLinearVelocity().set(5.0, 0.0);
+			this.world.addBody(triangle);
+			
+			// create a circle
+			Circle cirShape = new Circle(0.5);
+			GameObject circle = new GameObject();
+			circle.addFixture(cirShape);
+			circle.setMass(MassType.NORMAL);
+			circle.translate(2.0, 2.0);
+			// test adding some force
+			circle.applyForce(new Vector2(-100.0, 0.0));
+			// set some linear damping to simulate rolling friction
+			circle.setLinearDamping(0.05);
+			this.world.addBody(circle);
+			
+			// try a rectangle
+			Rectangle rectShape = new Rectangle(1.0, 1.0);
+			GameObject rectangle = new GameObject();
+			rectangle.addFixture(rectShape);
+			rectangle.setMass(MassType.NORMAL);
+			rectangle.translate(0.0, 2.0);
+			rectangle.getLinearVelocity().set(-5.0, 0.0);
+			this.world.addBody(rectangle);
+			
+			// try a polygon with lots of vertices
+			Polygon polyShape = Geometry.createUnitCirclePolygon(10, 1.0);
+			GameObject polygon = new GameObject();
+			polygon.addFixture(polyShape);
+			polygon.setMass(MassType.NORMAL);
+			polygon.translate(-2.5, 2.0);
+			// set the angular velocity
+			polygon.setAngularVelocity(Math.toRadians(-20.0));
+			this.world.addBody(polygon);
+			
+			// try a compound object
+			Circle c1 = new Circle(0.5);
+			BodyFixture c1Fixture = new BodyFixture(c1);
+			c1Fixture.setDensity(0.5);
+			Circle c2 = new Circle(0.5);
+			BodyFixture c2Fixture = new BodyFixture(c2);
+			c2Fixture.setDensity(0.5);
+			Rectangle rm = new Rectangle(2.0, 1.0);
+			// translate the circles in local coordinates
+			c1.translate(-1.0, 0.0);
+			c2.translate(1.0, 0.0);
+			GameObject capsule = new GameObject();
+			capsule.addFixture(c1Fixture);
+			capsule.addFixture(c2Fixture);
+			capsule.addFixture(rm);
+			capsule.setMass(MassType.NORMAL);
+			capsule.translate(0.0, 4.0);
+			this.world.addBody(capsule);
+			
+			GameObject issTri = new GameObject();
+			issTri.addFixture(Geometry.createIsoscelesTriangle(1.0, 3.0));
+			issTri.setMass(MassType.NORMAL);
+			issTri.translate(2.0, 3.0);
+			this.world.addBody(issTri);
+			
+			GameObject equTri = new GameObject();
+			equTri.addFixture(Geometry.createEquilateralTriangle(2.0));
+			equTri.setMass(MassType.NORMAL);
+			equTri.translate(3.0, 3.0);
+			this.world.addBody(equTri);
+			
+			GameObject rightTri = new GameObject();
+			rightTri.addFixture(Geometry.createRightTriangle(2.0, 1.0));
+			rightTri.setMass(MassType.NORMAL);
+			rightTri.translate(4.0, 3.0);
+			this.world.addBody(rightTri);
+			
+			GameObject cap = new GameObject();
+			cap.addFixture(new Capsule(1.0, 0.5));
+			cap.setMass(MassType.NORMAL);
+			cap.translate(-3.0, 3.0);
+			this.world.addBody(cap);
+			
+			GameObject slice = new GameObject();
+			slice.addFixture(new Slice(0.5, Math.toRadians(120)));
+			slice.setMass(MassType.NORMAL);
+			slice.translate(-3.0, 3.0);
+			this.world.addBody(slice);
+		} else {
+		    Settings settings = world.getSettings();
+		    settings.setStepFrequency(1000.0);
+
+		    world.setGravity(new Vector2(0.0, -9.8015));
+		    // body user data: null
+		    GameObject body1 = new GameObject();
+		    {// fixture user data: null
+		      Convex c = Geometry.createRectangle(0.5, 0.5);
+		      BodyFixture bf = new BodyFixture(c);
+		      bf.setFriction(0.5);
+		      bf.setRestitution(0.5);
+		      body1.addFixture(bf);
+		    }
+		    body1.rotate(Math.toRadians(1.3819942824033633));
+		    body1.translate(new Vector2(7.534717915562629, 0.45754244690146617));
+		    body1.setLinearVelocity(new Vector2(-4.469258683738997E-5, -6.597274373248429E-4));
+		    body1.setAngularVelocity(Math.toRadians(-0.21763476455485228));
+		    body1.setMass(new Mass(new Vector2(0.0, 0.0), 60.0, 2.0));
+		    body1.setMassType(MassType.NORMAL);
+		    world.addBody(body1);
+
+		    // body user data: null
+		    GameObject body2 = new GameObject();
+		    {// fixture user data: null
+		      Convex c = Geometry.createRectangle(16.0, 0.5);
+		      BodyFixture bf = new BodyFixture(c);
+		      bf.setFriction(0.5);
+		      bf.setRestitution(0.3);
+		      body2.addFixture(bf);
+		    }
+		    body2.setMass(new Mass(new Vector2(0.0, 0.0), 8.0, 170.83333333333334));
+		    body2.setMassType(MassType.INFINITE);
+		    world.addBody(body2);
+
+		    // body user data: null
+		    GameObject body3 = new GameObject();
+		    {// fixture user data: null
+		      Convex c = Geometry.createRectangle(16.0, 0.5);
+		      BodyFixture bf = new BodyFixture(c);
+		      bf.setFriction(0.5);
+		      bf.setRestitution(0.3);
+		      body3.addFixture(bf);
+		    }
+		    body3.translate(new Vector2(0.0, 9.0));
+		    body3.setMass(new Mass(new Vector2(0.0, 0.0), 8.0, 170.83333333333334));
+		    body3.setMassType(MassType.INFINITE);
+		    world.addBody(body3);
+
+		    // body user data: null
+		    GameObject body4 = new GameObject();
+		    {// fixture user data: null
+		      Convex c = Geometry.createRectangle(0.5, 9.0);
+		      BodyFixture bf = new BodyFixture(c);
+		      bf.setFriction(0.5);
+		      bf.setRestitution(0.3);
+		      body4.addFixture(bf);
+		    }
+		    body4.translate(new Vector2(8.0, 4.5));
+		    body4.setMass(new Mass(new Vector2(0.0, 0.0), 4.5, 30.46875));
+		    body4.setMassType(MassType.INFINITE);
+		    world.addBody(body4);
+
+		    // body user data: null
+		    GameObject body5 = new GameObject();
+		    {// fixture user data: null
+		      Convex c = Geometry.createRectangle(0.5, 9.0);
+		      BodyFixture bf = new BodyFixture(c);
+		      bf.setFriction(0.5);
+		      bf.setRestitution(0.3);
+		      body5.addFixture(bf);
+		    }
+		    body5.translate(new Vector2(-8.0, 4.5));
+		    body5.setMass(new Mass(new Vector2(0.0, 0.0), 4.5, 30.46875));
+		    body5.setMassType(MassType.INFINITE);
+		    world.addBody(body5);
+
+		    // body user data: null
+		    GameObject body6 = new GameObject();
+		    {// fixture user data: null
+		      Convex c = Geometry.createRectangle(0.5, 0.5);
+		      BodyFixture bf = new BodyFixture(c);
+		      bf.setFriction(0.5);
+		      bf.setRestitution(0.5);
+		      body6.addFixture(bf);
+		    }
+		    body6.rotate(Math.toRadians(0.0035215584940094225));
+		    body6.translate(new Vector2(7.5050589752744585, 0.9877281202447769));
+		    body6.setLinearVelocity(new Vector2(-0.048573174878680285, -0.08283627067032948));
+		    body6.setAngularVelocity(Math.toRadians(1.1691583680031228));
+		    body6.setMass(new Mass(new Vector2(0.0, 0.0), 60.0, 2.0));
+		    body6.setMassType(MassType.NORMAL);
+		    world.addBody(body6);
+
+		    // body user data: null
+		    GameObject body7 = new GameObject();
+		    {// fixture user data: null
+		      Convex c = Geometry.createRectangle(0.5, 10.0);
+		      BodyFixture bf = new BodyFixture(c);
+		      bf.setFriction(0.5);
+		      bf.setRestitution(0.5);
+		      body7.addFixture(bf);
+		    }
+		    body7.rotate(Math.toRadians(25.429136250628623));
+		    body7.translate(new Vector2(4.591922829116756, 4.6225804390926));
+		    body7.setAngularVelocity(Math.toRadians(-1.2659218186858423));
+		    body7.setMass(new Mass(new Vector2(0.0, 0.0), 0.0, 8.354166666666666));
+		    body7.setMassType(MassType.FIXED_LINEAR_VELOCITY);
+		    world.addBody(body7);
+//			// body user data: null
+//		    GameObject body1 = new GameObject();
+//		    {// fixture user data: null
+//		      Convex c = Geometry.createRectangle(15.0, 1.0);
+//		      BodyFixture bf = new BodyFixture(c);
+//		      body1.addFixture(bf);
+//		    }
+//		    body1.translate(new Vector2(0.0, -4.0));
+//		    body1.setMass(new Mass(new Vector2(0.0, 0.0), 15.0, 282.5));
+//		    body1.setMassType(MassType.INFINITE);
+//		    world.addBody(body1);
+//
+//		    // body user data: null
+//		    GameObject body2 = new GameObject();
+//		    {// fixture user data: null
+//		      Convex c = Geometry.createTriangle(new Vector2(0.0, 0.5), new Vector2(-0.5, -0.5), new Vector2(0.5, -0.5));
+//		      BodyFixture bf = new BodyFixture(c);
+//		      body2.addFixture(bf);
+//		    }
+//		    body2.translate(new Vector2(-1.0, 2.0));
+//		    body2.setLinearVelocity(new Vector2(5.0, 0.0));
+//		    body2.setMass(new Mass(new Vector2(0.0, -0.16666666666666669), 0.5, 0.04861111111111111));
+//		    body2.setMassType(MassType.NORMAL);
+//		    world.addBody(body2);
+//
+//		    // body user data: null
+//		    GameObject body3 = new GameObject();
+//		    {// fixture user data: null
+//		      Convex c = Geometry.createCircle(0.5);
+//		      BodyFixture bf = new BodyFixture(c);
+//		      body3.addFixture(bf);
+//		    }
+//		    body3.translate(new Vector2(2.0, 2.0));
+//		    body3.setLinearDamping(0.05);
+//		    body3.setMass(new Mass(new Vector2(0.0, 0.0), 0.7853981633974483, 0.09817477042468103));
+//		    body3.setMassType(MassType.NORMAL);
+//		    body3.applyForce(new Vector2(-100.0, 0.0));
+//		    world.addBody(body3);
+//
+//		    // body user data: null
+//		    GameObject body4 = new GameObject();
+//		    {// fixture user data: null
+//		      Convex c = Geometry.createRectangle(1.0, 1.0);
+//		      BodyFixture bf = new BodyFixture(c);
+//		      body4.addFixture(bf);
+//		    }
+//		    body4.translate(new Vector2(0.0, 2.0));
+//		    body4.setLinearVelocity(new Vector2(-5.0, 0.0));
+//		    body4.setMass(new Mass(new Vector2(0.0, 0.0), 1.0, 0.16666666666666666));
+//		    body4.setMassType(MassType.NORMAL);
+//		    world.addBody(body4);
+//
+//		    // body user data: null
+//		    GameObject body5 = new GameObject();
+//		    {// fixture user data: null
+//		      Convex c = Geometry.createPolygon(new Vector2(1.0, 0.0), new Vector2(0.8090169943749475, 0.5877852522924731), new Vector2(0.30901699437494745, 0.9510565162951536), new Vector2(-0.3090169943749474, 0.9510565162951536), new Vector2(-0.8090169943749475, 0.5877852522924731), new Vector2(-1.0, 0.0), new Vector2(-0.8090169943749475, -0.5877852522924731), new Vector2(-0.30901699437494745, -0.9510565162951536), new Vector2(0.3090169943749474, -0.9510565162951536), new Vector2(0.8090169943749475, -0.5877852522924731));
+//		      BodyFixture bf = new BodyFixture(c);
+//		      body5.addFixture(bf);
+//		    }
+//		    body5.translate(new Vector2(-2.5, 2.0));
+//		    body5.setAngularVelocity(Math.toRadians(-20.0));
+//		    body5.setMass(new Mass(new Vector2(0.0, 1.2760339359018772E-17), 2.9389262614623664, 1.3759156356104358));
+//		    body5.setMassType(MassType.NORMAL);
+//		    world.addBody(body5);
+//
+//		    // body user data: null
+//		    GameObject body6 = new GameObject();
+//		    {// fixture user data: null
+//		      Convex c = Geometry.createCircle(0.5);
+//		      c.translate(new Vector2(-1.0, 0.0));
+//		      BodyFixture bf = new BodyFixture(c);
+//		      bf.setDensity(0.5);
+//		      body6.addFixture(bf);
+//		    }
+//		    {// fixture user data: null
+//		      Convex c = Geometry.createCircle(0.5);
+//		      c.translate(new Vector2(1.0, 0.0));
+//		      BodyFixture bf = new BodyFixture(c);
+//		      bf.setDensity(0.5);
+//		      body6.addFixture(bf);
+//		    }
+//		    {// fixture user data: null
+//		      Convex c = Geometry.createRectangle(2.0, 1.0);
+//		      BodyFixture bf = new BodyFixture(c);
+//		      body6.addFixture(bf);
+//		    }
+//		    body6.translate(new Vector2(0.0, 4.0));
+//		    body6.setMass(new Mass(new Vector2(0.0, 0.0), 2.7853981633974483, 1.7169062671554627));
+//		    body6.setMassType(MassType.NORMAL);
+//		    world.addBody(body6);
+//
+//		    // body user data: null
+//		    GameObject body7 = new GameObject();
+//		    {// fixture user data: null
+//		      Convex c = Geometry.createTriangle(new Vector2(0.0, 2.0), new Vector2(-0.5, -1.0), new Vector2(0.5, -1.0));
+//		      BodyFixture bf = new BodyFixture(c);
+//		      body7.addFixture(bf);
+//		    }
+//		    body7.translate(new Vector2(2.0, 3.0));
+//		    body7.setMass(new Mass(new Vector2(0.0, 0.0), 1.5, 0.8125));
+//		    body7.setMassType(MassType.NORMAL);
+//		    world.addBody(body7);
+//
+//		    // body user data: null
+//		    GameObject body8 = new GameObject();
+//		    {// fixture user data: null
+//		      Convex c = Geometry.createTriangle(new Vector2(0.0, 1.3333333333333335), new Vector2(-1.1547005383792517, -0.6666666666666666), new Vector2(1.1547005383792517, -0.6666666666666666));
+//		      BodyFixture bf = new BodyFixture(c);
+//		      body8.addFixture(bf);
+//		    }
+//		    body8.translate(new Vector2(3.0, 3.0));
+//		    body8.setMass(new Mass(new Vector2(0.0, 7.401486830834377E-17), 2.3094010767585034, 1.026400478559335));
+//		    body8.setMassType(MassType.NORMAL);
+//		    world.addBody(body8);
+//
+//		    // body user data: null
+//		    GameObject body9 = new GameObject();
+//		    {// fixture user data: null
+//		      Convex c = Geometry.createTriangle(new Vector2(-0.6666666666666666, 0.6666666666666667), new Vector2(-0.6666666666666666, -0.3333333333333333), new Vector2(1.3333333333333335, -0.3333333333333333));
+//		      BodyFixture bf = new BodyFixture(c);
+//		      body9.addFixture(bf);
+//		    }
+//		    body9.translate(new Vector2(4.0, 3.0));
+//		    body9.setMass(new Mass(new Vector2(7.401486830834377E-17, 3.700743415417188E-17), 1.0, 0.2777777777777778));
+//		    body9.setMassType(MassType.NORMAL);
+//		    world.addBody(body9);
+//
+//		    // body user data: null
+//		    GameObject body10 = new GameObject();
+//		    {// fixture user data: null
+//		      Convex c = Geometry.createCapsule(1.0, 0.5);
+//		      BodyFixture bf = new BodyFixture(c);
+//		      body10.addFixture(bf);
+//		    }
+//		    body10.translate(new Vector2(-3.0, 3.0));
+//		    body10.setMass(new Mass(new Vector2(0.0, 0.0), 0.44634954084936207, 0.02882443612129436));
+//		    body10.setMassType(MassType.NORMAL);
+//		    world.addBody(body10);
+//
+//		    // body user data: null
+//		    GameObject body11 = new GameObject();
+//		    {// fixture user data: null
+//		      Convex c = Geometry.createSlice(0.5, Math.toRadians(119.99999999999999));
+//		      BodyFixture bf = new BodyFixture(c);
+//		      body11.addFixture(bf);
+//		    }
+//		    body11.translate(new Vector2(-3.0, 3.0));
+//		    body11.setMass(new Mass(new Vector2(0.27566444771089604, 0.0), 0.2617993877991494, 0.012830555588406765));
+//		    body11.setMassType(MassType.NORMAL);
+//		    world.addBody(body11);
+		}
+
+		System.out.println(WorldExporter.export("UsingGraphics2D", this.world));
 	}
 	
 	/**

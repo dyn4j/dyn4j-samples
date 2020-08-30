@@ -28,18 +28,18 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
-import java.util.ArrayList;
 import java.util.List;
 
-import org.dyn4j.dynamics.Body;
-import org.dyn4j.dynamics.RaycastResult;
-import org.dyn4j.dynamics.World;
+import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Ray;
 import org.dyn4j.geometry.Vector2;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
+import org.dyn4j.world.DetectFilter;
+import org.dyn4j.world.World;
+import org.dyn4j.world.result.RaycastResult;
 
 /**
  * A simple scene with a few shapes and a raycast being performed.
@@ -68,42 +68,42 @@ public class Raycast extends SimulationFrame {
 	    this.world.setGravity(World.ZERO_GRAVITY);
 
 	    // Triangle
-	    Body triangle = new SimulationBody();
+	    SimulationBody triangle = new SimulationBody();
 	    triangle.addFixture(Geometry.createTriangle(new Vector2(0.0, 0.5), new Vector2(-0.5, -0.5), new Vector2(0.5, -0.5)));
 	    triangle.translate(new Vector2(2.5, 3));
 	    triangle.setMass(MassType.INFINITE);
 	    this.world.addBody(triangle);
 
 	    // Circle
-	    Body circle = new SimulationBody();
+	    SimulationBody circle = new SimulationBody();
 	    circle.addFixture(Geometry.createCircle(0.5));
 	    circle.translate(new Vector2(3.2, 3.5));
 	    circle.setMass(MassType.INFINITE);
 	    this.world.addBody(circle);
 
 	    // Segment
-	    Body segment = new SimulationBody();
+	    SimulationBody segment = new SimulationBody();
 	    segment.addFixture(Geometry.createSegment(new Vector2(0.5, 0.5), new Vector2(-0.5, 0)));
 	    segment.translate(new Vector2(4.2, 4));
 	    segment.setMass(MassType.INFINITE);
 	    this.world.addBody(segment);
 
 	    // Square
-	    Body square = new SimulationBody();
+	    SimulationBody square = new SimulationBody();
 	    square.addFixture(Geometry.createSquare(1.0));
 	    square.translate(new Vector2(1.5, 2.0));
 	    square.setMass(MassType.INFINITE);
 	    this.world.addBody(square);
 
 	    // Polygon
-	    Body polygon = new SimulationBody();
+	    SimulationBody polygon = new SimulationBody();
 	    polygon.addFixture(Geometry.createUnitCirclePolygon(5, 0.5));
 	    polygon.translate(new Vector2(0.5, 0));
 	    polygon.setMass(MassType.INFINITE);
 	    this.world.addBody(polygon);
 
 	    // Capsule
-	    Body capsule = new SimulationBody();
+	    SimulationBody capsule = new SimulationBody();
 	    capsule.addFixture(Geometry.createCapsule(2, 1));
 	    capsule.translate(new Vector2(4.5, 5.0));
 	    capsule.setMass(MassType.INFINITE);
@@ -128,18 +128,22 @@ public class Raycast extends SimulationFrame {
 				ray.getDirectionVector().x * length * scale, 
 				ray.getDirectionVector().y * length * scale));
 		
-		List<RaycastResult> results = new ArrayList<RaycastResult>();
-		if (this.world.raycast(ray, length, true, true, results)) {
-			for (RaycastResult result : results) {
-				// draw the intersection
-				Vector2 point = result.getRaycast().getPoint();
-				g.setColor(Color.GREEN);
-				g.fill(new Ellipse2D.Double(
-						point.x * scale - r * 0.5, 
-						point.y * scale - r * 0.5, 
-						r, 
-						r));
-			}
+		List<RaycastResult<SimulationBody, BodyFixture>> results = this.world.raycast(ray, length, new DetectFilter<SimulationBody, BodyFixture>(true, true, null));
+		for (RaycastResult<SimulationBody, BodyFixture> result : results) {
+			// draw the intersection
+			Vector2 point = result.getRaycast().getPoint();
+			g.setColor(Color.GREEN);
+			g.fill(new Ellipse2D.Double(
+					point.x * scale - r * 0.5, 
+					point.y * scale - r * 0.5, 
+					r, 
+					r));
+			g.setColor(Color.BLUE);
+			g.draw(new Line2D.Double(
+					point.x * scale - r * 0.5, 
+					point.y * scale - r * 0.5, 
+					point.x * scale - r * 0.5 + result.getRaycast().getNormal().x * scale, 
+					point.y * scale - r * 0.5 + result.getRaycast().getNormal().y * scale));
 		}
 	}
 	

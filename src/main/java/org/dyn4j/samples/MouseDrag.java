@@ -30,13 +30,13 @@ import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-import org.dyn4j.dynamics.World;
 import org.dyn4j.dynamics.joint.MotorJoint;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Transform;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
+import org.dyn4j.world.World;
 
 /**
  * A simple scene showing how to drag an object around the scene
@@ -97,16 +97,16 @@ public class MouseDrag extends SimulationFrame {
 		this.controller = new SimulationBody(Color.CYAN);
 	    this.controller.addFixture(Geometry.createCircle(0.5));
 	    this.controller.setMass(MassType.INFINITE);
-	    this.controller.setAutoSleepingEnabled(false);
+	    this.controller.setAtRestDetectionEnabled(false);
 	    this.world.addBody(this.controller);
 	    
 	    SimulationBody player = new SimulationBody(Color.GREEN);
 	    player.addFixture(Geometry.createCircle(0.5));
 	    player.setMass(MassType.NORMAL);
-	    player.setAutoSleepingEnabled(false);
+	    player.setAtRestDetectionEnabled(false);
 	    this.world.addBody(player);
 	    
-	    MotorJoint control = new MotorJoint(player, this.controller);
+	    MotorJoint<SimulationBody> control = new MotorJoint<SimulationBody>(player, this.controller);
 	    control.setCollisionAllowed(false);
 	    control.setMaximumForce(1000.0);
 	    control.setMaximumTorque(1000.0);

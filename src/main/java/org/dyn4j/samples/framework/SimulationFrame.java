@@ -39,7 +39,7 @@ import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import org.dyn4j.dynamics.World;
+import org.dyn4j.world.World;
 
 /**
  * A very VERY simple framework for building samples.
@@ -57,7 +57,7 @@ public abstract class SimulationFrame extends JFrame {
 	protected final Canvas canvas;
 	
 	/** The dynamics engine */
-	protected final World world;
+	protected final World<SimulationBody> world;
 	
 	/** The pixels per meter scale factor */
 	protected final double scale;
@@ -85,7 +85,7 @@ public abstract class SimulationFrame extends JFrame {
 		this.scale = scale;
 		
 		// create the world
-		this.world = new World();
+		this.world = new World<SimulationBody>();
 		
 		// setup the JFrame
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

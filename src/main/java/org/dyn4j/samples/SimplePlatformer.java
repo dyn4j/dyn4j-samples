@@ -32,17 +32,17 @@ import java.awt.event.KeyListener;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.dyn4j.dynamics.Body;
-import org.dyn4j.dynamics.Step;
-import org.dyn4j.dynamics.StepAdapter;
-import org.dyn4j.dynamics.World;
-import org.dyn4j.dynamics.contact.ContactAdapter;
-import org.dyn4j.dynamics.contact.ContactPoint;
-import org.dyn4j.dynamics.contact.PersistedContactPoint;
+import org.dyn4j.dynamics.TimeStep;
+import org.dyn4j.dynamics.contact.Contact;
+import org.dyn4j.dynamics.contact.ContactConstraint;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
+import org.dyn4j.world.ContactCollisionData;
+import org.dyn4j.world.PhysicsWorld;
+import org.dyn4j.world.listener.ContactListenerAdapter;
+import org.dyn4j.world.listener.StepListenerAdapter;
 
 /**
  * A simple scene of a circle that is controlled by the left and
@@ -160,13 +160,14 @@ public class SimplePlatformer extends SimulationFrame {
 		wheel.setMass(MassType.NORMAL);
 		this.world.addBody(wheel);
 		
-		this.world.addListener(new StepAdapter() {
+		this.world.addStepListener(new StepListenerAdapter<SimulationBody>() {
 			@Override
-			public void begin(Step step, World world) {
+			public void begin(TimeStep step, PhysicsWorld<SimulationBody, ?> world) {
+				super.begin(step, world);
 				// at the beginning of each world step, check if the body is in
 				// contact with any of the floor bodies
 				boolean isGround = false;
-				List<Body> bodies =  wheel.getInContactBodies(false);
+				List<SimulationBody> bodies =  world.getInContactBodies(wheel, false);
 				for (int i = 0; i < bodies.size(); i++) {
 					if (bodies.get(i).getUserData() == FLOOR_BODY) {
 						isGround = true;
@@ -183,29 +184,29 @@ public class SimplePlatformer extends SimulationFrame {
 		
 		// then, when a contact is created between two bodies, check if the bodies
 		// are floor and wheel, if so, then set the color and flag
-		this.world.addListener(new ContactAdapter() {
-			private boolean isContactWithFloor(ContactPoint point) {
-				if ((point.getBody1() == wheel || point.getBody2() == wheel) &&
-					(point.getBody1().getUserData() == FLOOR_BODY || point.getBody2().getUserData() == FLOOR_BODY)) {
+		this.world.addContactListener(new ContactListenerAdapter<SimulationBody>() {
+			private boolean isContactWithFloor(ContactConstraint<SimulationBody> contactConstraint) {
+				if ((contactConstraint.getBody1() == wheel || contactConstraint.getBody2() == wheel) &&
+					(contactConstraint.getBody1().getUserData() == FLOOR_BODY || contactConstraint.getBody2().getUserData() == FLOOR_BODY)) {
 					return true;
 				}
 				return false;
 			}
 			
 			@Override
-			public boolean persist(PersistedContactPoint point) {
-				if (isContactWithFloor(point)) {
+			public void persist(ContactCollisionData<SimulationBody> collision, Contact oldContact, Contact newContact) {
+				if (isContactWithFloor(collision.getContactConstraint())) {
 					isOnGround.set(true);
 				}
-				return super.persist(point);
+				super.persist(collision, oldContact, newContact);
 			}
 			
 			@Override
-			public boolean begin(ContactPoint point) {
-				if (isContactWithFloor(point)) {
+			public void begin(ContactCollisionData<SimulationBody> collision, Contact contact) {
+				if (isContactWithFloor(collision.getContactConstraint())) {
 					isOnGround.set(true);
 				}
-				return super.begin(point);
+				super.begin(collision, contact);
 			}
 		});
 	}

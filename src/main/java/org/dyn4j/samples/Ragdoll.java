@@ -26,7 +26,6 @@ package org.dyn4j.samples;
 
 import java.awt.Graphics2D;
 
-import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.dynamics.joint.RevoluteJoint;
 import org.dyn4j.geometry.Convex;
@@ -58,7 +57,7 @@ public class Ragdoll extends SimulationFrame {
 	 */
 	protected void initializeWorld() {		
 		// Ground
-	    Body ground = new SimulationBody();
+		SimulationBody ground = new SimulationBody();
 	    {// Fixture1
 	      Convex c = Geometry.createRectangle(100.0, 1.0);
 	      BodyFixture bf = new BodyFixture(c);
@@ -71,7 +70,7 @@ public class Ragdoll extends SimulationFrame {
 	    // the ragdoll
 	    
 	    // Head
-	    Body head = new SimulationBody();
+	    SimulationBody head = new SimulationBody();
 	    {// Fixture2
 	      Convex c = Geometry.createCircle(0.25);
 	      BodyFixture bf = new BodyFixture(c);
@@ -81,7 +80,7 @@ public class Ragdoll extends SimulationFrame {
 	    world.addBody(head);
 
 	    // Torso
-	    Body torso = new SimulationBody();
+	    SimulationBody torso = new SimulationBody();
 	    {// Fixture4
 	      Convex c = Geometry.createRectangle(0.5, 1.0);
 	      BodyFixture bf = new BodyFixture(c);
@@ -98,7 +97,7 @@ public class Ragdoll extends SimulationFrame {
 	    world.addBody(torso);
 
 	    // Right Humerus
-	    Body rightHumerus = new SimulationBody();
+	    SimulationBody rightHumerus = new SimulationBody();
 	    {// Fixture5
 	      Convex c = Geometry.createRectangle(0.25, 0.5);
 	      BodyFixture bf = new BodyFixture(c);
@@ -109,7 +108,7 @@ public class Ragdoll extends SimulationFrame {
 	    world.addBody(rightHumerus);
 
 	    // Right Ulna
-	    Body rightUlna = new SimulationBody();
+	    SimulationBody rightUlna = new SimulationBody();
 	    {// Fixture6
 	      Convex c = Geometry.createRectangle(0.25, 0.4);
 	      BodyFixture bf = new BodyFixture(c);
@@ -120,7 +119,7 @@ public class Ragdoll extends SimulationFrame {
 	    world.addBody(rightUlna);
 
 	    // Neck
-	    Body neck = new SimulationBody();
+	    SimulationBody neck = new SimulationBody();
 	    {// Fixture7
 	      Convex c = Geometry.createRectangle(0.15, 0.2);
 	      BodyFixture bf = new BodyFixture(c);
@@ -131,7 +130,7 @@ public class Ragdoll extends SimulationFrame {
 	    world.addBody(neck);
 
 	    // Left Humerus
-	    Body leftHumerus = new SimulationBody();
+	    SimulationBody leftHumerus = new SimulationBody();
 	    {// Fixture9
 	      Convex c = Geometry.createRectangle(0.25, 0.5);
 	      BodyFixture bf = new BodyFixture(c);
@@ -142,7 +141,7 @@ public class Ragdoll extends SimulationFrame {
 	    world.addBody(leftHumerus);
 
 	    // Left Ulna
-	    Body leftUlna = new SimulationBody();
+	    SimulationBody leftUlna = new SimulationBody();
 	    {// Fixture11
 	      Convex c = Geometry.createRectangle(0.25, 0.4);
 	      BodyFixture bf = new BodyFixture(c);
@@ -153,7 +152,7 @@ public class Ragdoll extends SimulationFrame {
 	    world.addBody(leftUlna);
 
 	    // Right Femur
-	    Body rightFemur = new SimulationBody();
+	    SimulationBody rightFemur = new SimulationBody();
 	    {// Fixture12
 	      Convex c = Geometry.createRectangle(0.25, 0.75);
 	      BodyFixture bf = new BodyFixture(c);
@@ -164,7 +163,7 @@ public class Ragdoll extends SimulationFrame {
 	    world.addBody(rightFemur);
 
 	    // Left Femur
-	    Body leftFemur = new SimulationBody();
+	    SimulationBody leftFemur = new SimulationBody();
 	    {// Fixture13
 	      Convex c = Geometry.createRectangle(0.25, 0.75);
 	      BodyFixture bf = new BodyFixture(c);
@@ -175,7 +174,7 @@ public class Ragdoll extends SimulationFrame {
 	    world.addBody(leftFemur);
 
 	    // Right Tibia
-	    Body rightTibia = new SimulationBody();
+	    SimulationBody rightTibia = new SimulationBody();
 	    {// Fixture14
 	      Convex c = Geometry.createRectangle(0.25, 0.5);
 	      BodyFixture bf = new BodyFixture(c);
@@ -186,7 +185,7 @@ public class Ragdoll extends SimulationFrame {
 	    world.addBody(rightTibia);
 
 	    // Left Tibia
-	    Body leftTibia = new SimulationBody();
+	    SimulationBody leftTibia = new SimulationBody();
 	    {// Fixture15
 	      Convex c = Geometry.createRectangle(0.25, 0.5);
 	      BodyFixture bf = new BodyFixture(c);
@@ -197,7 +196,7 @@ public class Ragdoll extends SimulationFrame {
 	    world.addBody(leftTibia);
 
 	    // Head to Neck
-	    RevoluteJoint headToNeck = new RevoluteJoint(head, neck, new Vector2(0.01, -0.2));
+	    RevoluteJoint<SimulationBody> headToNeck = new RevoluteJoint<SimulationBody>(head, neck, new Vector2(0.01, -0.2));
 	    headToNeck.setLimitEnabled(false);
 	    headToNeck.setLimits(Math.toRadians(0.0), Math.toRadians(0.0));
 	    headToNeck.setReferenceAngle(Math.toRadians(0.0));
@@ -208,7 +207,7 @@ public class Ragdoll extends SimulationFrame {
 	    world.addJoint(headToNeck);
 	    
 	    // Neck to Torso
-	    RevoluteJoint neckToTorso = new RevoluteJoint(neck, torso, new Vector2(0.01, -0.35));
+	    RevoluteJoint<SimulationBody> neckToTorso = new RevoluteJoint<SimulationBody>(neck, torso, new Vector2(0.01, -0.35));
 	    neckToTorso.setLimitEnabled(false);
 	    neckToTorso.setLimits(Math.toRadians(0.0), Math.toRadians(0.0));
 	    neckToTorso.setReferenceAngle(Math.toRadians(0.0));
@@ -219,7 +218,7 @@ public class Ragdoll extends SimulationFrame {
 	    world.addJoint(neckToTorso);
 	    
 	    // Torso to Left Humerus
-	    RevoluteJoint torsoToLeftHumerus = new RevoluteJoint(torso, leftHumerus, new Vector2(-0.4, -0.4));
+	    RevoluteJoint<SimulationBody> torsoToLeftHumerus = new RevoluteJoint<SimulationBody>(torso, leftHumerus, new Vector2(-0.4, -0.4));
 	    torsoToLeftHumerus.setLimitEnabled(false);
 	    torsoToLeftHumerus.setLimits(Math.toRadians(0.0), Math.toRadians(0.0));
 	    torsoToLeftHumerus.setReferenceAngle(Math.toRadians(0.0));
@@ -230,7 +229,7 @@ public class Ragdoll extends SimulationFrame {
 	    world.addJoint(torsoToLeftHumerus);
 	    
 	    // Torso to Right Humerus
-	    RevoluteJoint torsoToRightHumerus = new RevoluteJoint(torso, rightHumerus, new Vector2(0.4, -0.4));
+	    RevoluteJoint<SimulationBody> torsoToRightHumerus = new RevoluteJoint<SimulationBody>(torso, rightHumerus, new Vector2(0.4, -0.4));
 	    torsoToRightHumerus.setLimitEnabled(false);
 	    torsoToRightHumerus.setLimits(Math.toRadians(0.0), Math.toRadians(0.0));
 	    torsoToRightHumerus.setReferenceAngle(Math.toRadians(0.0));
@@ -241,7 +240,7 @@ public class Ragdoll extends SimulationFrame {
 	    world.addJoint(torsoToRightHumerus);
 	    
 	    // Right Humerus to Right Ulna
-	    RevoluteJoint rightHumerusToRightUlna = new RevoluteJoint(rightHumerus, rightUlna, new Vector2(0.43, -0.82));
+	    RevoluteJoint<SimulationBody> rightHumerusToRightUlna = new RevoluteJoint<SimulationBody>(rightHumerus, rightUlna, new Vector2(0.43, -0.82));
 	    rightHumerusToRightUlna.setLimitEnabled(false);
 	    rightHumerusToRightUlna.setLimits(Math.toRadians(0.0), Math.toRadians(0.0));
 	    rightHumerusToRightUlna.setReferenceAngle(Math.toRadians(0.0));
@@ -252,7 +251,7 @@ public class Ragdoll extends SimulationFrame {
 	    world.addJoint(rightHumerusToRightUlna);
 	    
 	    // Left Humerus to Left Ulna
-	    RevoluteJoint leftHumerusToLeftUlna = new RevoluteJoint(leftHumerus, leftUlna, new Vector2(-0.4, -0.81));
+	    RevoluteJoint<SimulationBody> leftHumerusToLeftUlna = new RevoluteJoint<SimulationBody>(leftHumerus, leftUlna, new Vector2(-0.4, -0.81));
 	    leftHumerusToLeftUlna.setLimitEnabled(false);
 	    leftHumerusToLeftUlna.setLimits(Math.toRadians(0.0), Math.toRadians(0.0));
 	    leftHumerusToLeftUlna.setReferenceAngle(Math.toRadians(0.0));
@@ -263,7 +262,7 @@ public class Ragdoll extends SimulationFrame {
 	    world.addJoint(leftHumerusToLeftUlna);
 	    
 	    // Torso to Right Femur
-	    RevoluteJoint torsoToRightFemur = new RevoluteJoint(torso, rightFemur, new Vector2(0.16, -1.25));
+	    RevoluteJoint<SimulationBody> torsoToRightFemur = new RevoluteJoint<SimulationBody>(torso, rightFemur, new Vector2(0.16, -1.25));
 	    torsoToRightFemur.setLimitEnabled(false);
 	    torsoToRightFemur.setLimits(Math.toRadians(0.0), Math.toRadians(0.0));
 	    torsoToRightFemur.setReferenceAngle(Math.toRadians(0.0));
@@ -274,7 +273,7 @@ public class Ragdoll extends SimulationFrame {
 	    world.addJoint(torsoToRightFemur);
 	    
 	    // Torso to Left Femur
-	    RevoluteJoint torsoToLeftFemur = new RevoluteJoint(torso, leftFemur, new Vector2(-0.13, -1.25));
+	    RevoluteJoint<SimulationBody> torsoToLeftFemur = new RevoluteJoint<SimulationBody>(torso, leftFemur, new Vector2(-0.13, -1.25));
 	    torsoToLeftFemur.setLimitEnabled(false);
 	    torsoToLeftFemur.setLimits(Math.toRadians(0.0), Math.toRadians(0.0));
 	    torsoToLeftFemur.setReferenceAngle(Math.toRadians(0.0));
@@ -285,7 +284,7 @@ public class Ragdoll extends SimulationFrame {
 	    world.addJoint(torsoToLeftFemur);
 	    
 	    // Right Femur to Right Tibia
-	    RevoluteJoint rightFemurToRightTibia = new RevoluteJoint(rightFemur, rightTibia, new Vector2(0.17, -1.9));
+	    RevoluteJoint<SimulationBody> rightFemurToRightTibia = new RevoluteJoint<SimulationBody>(rightFemur, rightTibia, new Vector2(0.17, -1.9));
 	    rightFemurToRightTibia.setLimitEnabled(false);
 	    rightFemurToRightTibia.setLimits(Math.toRadians(0.0), Math.toRadians(0.0));
 	    rightFemurToRightTibia.setReferenceAngle(Math.toRadians(0.0));
@@ -296,7 +295,7 @@ public class Ragdoll extends SimulationFrame {
 	    world.addJoint(rightFemurToRightTibia);
 	    
 	    // Left Femur to Left Tibia
-	    RevoluteJoint leftFemurToLeftTibia = new RevoluteJoint(leftFemur, leftTibia, new Vector2(-0.14, -1.9));
+	    RevoluteJoint<SimulationBody> leftFemurToLeftTibia = new RevoluteJoint<SimulationBody>(leftFemur, leftTibia, new Vector2(-0.14, -1.9));
 	    leftFemurToLeftTibia.setLimitEnabled(false);
 	    leftFemurToLeftTibia.setLimits(Math.toRadians(0.0), Math.toRadians(0.0));
 	    leftFemurToLeftTibia.setReferenceAngle(Math.toRadians(0.0));

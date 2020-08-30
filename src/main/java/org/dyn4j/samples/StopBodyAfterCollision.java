@@ -24,16 +24,16 @@
  */
 package org.dyn4j.samples;
 
-import org.dyn4j.collision.narrowphase.Penetration;
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.dynamics.CollisionAdapter;
-import org.dyn4j.dynamics.World;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Vector2;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
+import org.dyn4j.world.NarrowphaseCollisionData;
+import org.dyn4j.world.World;
+import org.dyn4j.world.listener.CollisionListenerAdapter;
 
 /**
  * A simple scene of two bodies that when collided will stop immediately.
@@ -51,15 +51,19 @@ public class StopBodyAfterCollision extends SimulationFrame {
 	 * @version 3.2.0
 	 * @since 3.2.0
 	 */
-	private static class StopContactListener extends CollisionAdapter {
+	private static class StopContactListener extends CollisionListenerAdapter<SimulationBody, BodyFixture> {
 		private Body b1, b2;
 		
 		public StopContactListener(Body b1, Body b2) {
 			this.b1 = b1;
 			this.b2 = b2;
 		}
+		
 		@Override
-		public boolean collision(Body body1, BodyFixture fixture1, Body body2, BodyFixture fixture2, Penetration penetration) {
+		public boolean collision(NarrowphaseCollisionData<SimulationBody, BodyFixture> collision) {
+			Body body1 = collision.getBody1();
+			Body body2 = collision.getBody2();
+			
 			// the bodies can appear in either order
 			if ((body1 == b1 && body2 == b2) ||
 			    (body1 == b2 && body2 == b1)) {
@@ -113,7 +117,7 @@ public class StopBodyAfterCollision extends SimulationFrame {
 		rectangle.translate(0.0, 2.0);
 		this.world.addBody(rectangle);
 		
-		this.world.addListener(new StopContactListener(circle, rectangle));
+		this.world.addCollisionListener(new StopContactListener(circle, rectangle));
 	}
 	
 	/**

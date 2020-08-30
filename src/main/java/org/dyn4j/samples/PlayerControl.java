@@ -31,7 +31,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.dynamics.World;
 import org.dyn4j.dynamics.joint.MotorJoint;
 import org.dyn4j.geometry.Convex;
 import org.dyn4j.geometry.Geometry;
@@ -40,6 +39,7 @@ import org.dyn4j.geometry.Transform;
 import org.dyn4j.geometry.Vector2;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
+import org.dyn4j.world.World;
 
 /**
  * A moderately complex scene where one body is controlled using a motor joint
@@ -114,7 +114,7 @@ public class PlayerControl extends SimulationFrame {
 	    // wake up this body.  If you are constantly changing the controller
 	    // body's rotation, you might as well just do this and not worry
 	    // about it.
-	    body1.setAutoSleepingEnabled(false);
+	    body1.setAtRestDetectionEnabled(false);
 	    world.addBody(body1);
 
 	    // Controller
@@ -137,7 +137,7 @@ public class PlayerControl extends SimulationFrame {
 	    world.addBody(controller);
 
 	    // the controller joint
-	    MotorJoint joint1 = new MotorJoint(controller, body1);
+	    MotorJoint<SimulationBody> joint1 = new MotorJoint<SimulationBody>(controller, body1);
 	    joint1.setLinearTarget(new Vector2(0.5, 0.5));
 	    joint1.setAngularTarget(Math.PI * 0.25);
 	    joint1.setCorrectionFactor(0.3);

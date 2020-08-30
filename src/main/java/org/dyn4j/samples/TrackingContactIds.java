@@ -29,16 +29,14 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.dynamics.contact.ContactAdapter;
-import org.dyn4j.dynamics.contact.ContactPoint;
-import org.dyn4j.dynamics.contact.ContactPointId;
-import org.dyn4j.dynamics.contact.PersistedContactPoint;
-import org.dyn4j.dynamics.contact.SolvedContactPoint;
+import org.dyn4j.dynamics.contact.Contact;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Vector2;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
+import org.dyn4j.world.ContactCollisionData;
+import org.dyn4j.world.listener.ContactListenerAdapter;
 
 /**
  * A simple scene with a few shape types that tracks the creation,
@@ -54,53 +52,43 @@ public class TrackingContactIds extends SimulationFrame {
 	// contact listening
 	
 	/** A mapping of contact id to UUID */
-	private Map<ContactPointId, UUID> ids = new HashMap<ContactPointId, UUID>();
-	
+	private Map<Contact, UUID> ids2 = new HashMap<Contact, UUID>();
+
 	/**
 	 * A custom contact listener for tracking contacts.
 	 * @author William Bittle
 	 * @version 3.2.1
 	 * @since 3.2.1
 	 */
-	private class CustomContactListener extends ContactAdapter { 
+	private class CustomContactListener extends ContactListenerAdapter<SimulationBody> {
 		@Override
-		public boolean begin(ContactPoint point) {
-			ContactPointId id = point.getId();
-			UUID uuid = UUID.randomUUID();
-			System.out.println("Begin:   " + uuid.toString());
-			ids.put(id, uuid);
-			return true;
+		public void begin(ContactCollisionData<SimulationBody> collision, Contact contact) {
+			UUID id = UUID.randomUUID();
+			ids2.put(contact, id);
+			System.out.println("BEGIN: " + id);
 		}
 		
 		@Override
-		public void end(ContactPoint point) {
-			ContactPointId id = point.getId();
-			UUID uuid = ids.remove(id);
-			if (uuid != null) {
-				System.out.println("End:     " + uuid.toString());
-			} else {
+		public void persist(ContactCollisionData<SimulationBody> collision, Contact oldContact, Contact newContact) {
+			UUID id = ids2.get(oldContact);
+			if (id == null) {
 				System.err.println("Shouldn't happen");
 			}
+			// since the contact object itself changes between iterations
+			// remove the old contact and add the new contact with the same id
+			ids2.remove(oldContact);
+			ids2.put(newContact, id);
 		}
 		
 		@Override
-		public boolean persist(PersistedContactPoint point) {
-			ContactPointId id = point.getId();
-			UUID uuid = ids.get(id);
-			if (uuid == null) {
+		public void end(ContactCollisionData<SimulationBody> collision, Contact contact) {
+			UUID id = ids2.get(contact);
+			if (id == null) {
 				System.err.println("Shouldn't happen");
 			}
-			return true;
+			System.out.println("END: " + id);
+			ids2.remove(contact);
 		}
-		
-		@Override
-		public void postSolve(SolvedContactPoint point) { }
-		
-		@Override
-		public boolean preSolve(ContactPoint point) { return true; }
-		
-		@Override
-		public void sensed(ContactPoint point) { }	
 	}
 	
 	/**
@@ -199,7 +187,7 @@ public class TrackingContactIds extends SimulationFrame {
 		this.world.addBody(rightTri);
 		
 		// attach the contact listener
-		this.world.addListener(new CustomContactListener());
+		this.world.addContactListener(new CustomContactListener());
 	}
 	
 	/**

@@ -35,7 +35,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.dyn4j.collision.narrowphase.Sat;
-import org.dyn4j.dynamics.contact.ContactPoint;
+import org.dyn4j.dynamics.contact.ContactConstraint;
+import org.dyn4j.dynamics.contact.SolvedContact;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.Link;
 import org.dyn4j.geometry.MassType;
@@ -205,21 +206,23 @@ public class LinkTerrain extends SimulationFrame {
 	@Override
 	protected void render(Graphics2D g, double elapsedTime, SimulationBody body) {
 		super.render(g, elapsedTime, body);
-		List<ContactPoint> contacts = body.getContacts(false);
-		for (ContactPoint c : contacts) {
-			// draw the contact point
-			final double r = 0.05;
-			final double d = r * 2;
-			Ellipse2D.Double cp = new Ellipse2D.Double((c.getPoint().x - r) * this.scale, (c.getPoint().y - r) * this.scale, d * this.scale, d * this.scale);
-			g.setColor(Color.GREEN);
-			g.fill(cp);
-			
-			// draw the contact normal
-			Line2D.Double vn = new Line2D.Double(
-					c.getPoint().x * this.scale, c.getPoint().y * this.scale, 
-					(c.getPoint().x + -c.getNormal().x * c.getDepth() * 100) * this.scale, (c.getPoint().y + -c.getNormal().y * c.getDepth() * 100) * this.scale);
-			g.setColor(Color.BLUE);
-			g.draw(vn);
+		List<ContactConstraint<SimulationBody>> contacts = this.world.getContacts(body);
+		for (ContactConstraint<SimulationBody> cc : contacts) {
+			for (SolvedContact c : cc.getContacts()) {
+				// draw the contact point
+				final double r = 0.05;
+				final double d = r * 2;
+				Ellipse2D.Double cp = new Ellipse2D.Double((c.getPoint().x - r) * this.scale, (c.getPoint().y - r) * this.scale, d * this.scale, d * this.scale);
+				g.setColor(Color.GREEN);
+				g.fill(cp);
+				
+				// draw the contact normal
+				Line2D.Double vn = new Line2D.Double(
+						c.getPoint().x * this.scale, c.getPoint().y * this.scale, 
+						(c.getPoint().x + -cc.getNormal().x * c.getDepth() * 100) * this.scale, (c.getPoint().y + -cc.getNormal().y * c.getDepth() * 100) * this.scale);
+				g.setColor(Color.BLUE);
+				g.draw(vn);
+			}
 		}
 	}
 	

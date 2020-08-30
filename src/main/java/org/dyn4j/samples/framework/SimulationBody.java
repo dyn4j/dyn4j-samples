@@ -100,7 +100,7 @@ public class SimulationBody extends Body {
 		Convex convex = fixture.getShape();
 		
 		// brighten the color if asleep
-		if (this.isAsleep()) {
+		if (this.isAtRest()) {
 			color = color.brighter();
 		}
 		

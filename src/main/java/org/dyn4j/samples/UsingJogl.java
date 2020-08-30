@@ -32,7 +32,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 
 import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.dynamics.World;
+import org.dyn4j.world.World;
 import org.dyn4j.geometry.Convex;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
@@ -152,7 +152,7 @@ public class UsingJogl extends JFrame implements GLEventListener {
 	protected Animator animator;
 	
 	/** The dynamics engine */
-	protected World world;
+	protected World<Body> world;
 	
 	/** The time stamp for the last iteration */
 	protected long last;
@@ -204,7 +204,7 @@ public class UsingJogl extends JFrame implements GLEventListener {
 	 */
 	protected void initializeWorld() {
 		// create the world
-		this.world = new World();
+		this.world = new World<Body>();
 		
 		// create all your bodies/joints
 		
