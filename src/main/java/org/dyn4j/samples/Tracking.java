@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2016 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2021 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -26,7 +26,6 @@ package org.dyn4j.samples;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.dynamics.contact.Contact;
@@ -42,18 +41,34 @@ import org.dyn4j.world.listener.ContactListenerAdapter;
  * A simple scene with a few shape types that tracks the creation,
  * persistence and removal of contacts by using their unique ids.
  * @author William Bittle
- * @version 3.2.1
+ * @version 4.1.1
  * @since 3.0.0
  */
-public class TrackingContactIds extends SimulationFrame {
+public class Tracking extends SimulationFrame {
 	/** The serial version id */
 	private static final long serialVersionUID = -7551190289570564575L;
 
+	/**
+	 * A simple class to generate "id"s.
+	 * @author William Bittle
+	 * @version 4.1.1
+	 * @since 4.1.1
+	 */
+	private class IdGenerator {
+		private long lastId = -1;
+		public final Object getId() {
+			return Long.valueOf(++lastId);
+		}
+	}
+	
 	// contact listening
 	
 	/** A mapping of contact id to UUID */
-	private Map<Contact, UUID> ids2 = new HashMap<Contact, UUID>();
-
+	private final Map<Contact, Object> idTracking = new HashMap<Contact, Object>();
+	
+	/** The id generator */
+	private final IdGenerator idGenerator = new IdGenerator();
+	
 	/**
 	 * A custom contact listener for tracking contacts.
 	 * @author William Bittle
@@ -63,38 +78,38 @@ public class TrackingContactIds extends SimulationFrame {
 	private class CustomContactListener extends ContactListenerAdapter<SimulationBody> {
 		@Override
 		public void begin(ContactCollisionData<SimulationBody> collision, Contact contact) {
-			UUID id = UUID.randomUUID();
-			ids2.put(contact, id);
+			Object id = idGenerator.getId();
+			idTracking.put(contact, id);
 			System.out.println("BEGIN: " + id);
 		}
 		
 		@Override
 		public void persist(ContactCollisionData<SimulationBody> collision, Contact oldContact, Contact newContact) {
-			UUID id = ids2.get(oldContact);
+			Object id = idTracking.get(oldContact);
 			if (id == null) {
 				System.err.println("Shouldn't happen");
 			}
 			// since the contact object itself changes between iterations
 			// remove the old contact and add the new contact with the same id
-			ids2.remove(oldContact);
-			ids2.put(newContact, id);
+			idTracking.remove(oldContact);
+			idTracking.put(newContact, id);
 		}
 		
 		@Override
 		public void end(ContactCollisionData<SimulationBody> collision, Contact contact) {
-			UUID id = ids2.get(contact);
+			Object id = idTracking.get(contact);
 			if (id == null) {
 				System.err.println("Shouldn't happen");
 			}
 			System.out.println("END: " + id);
-			ids2.remove(contact);
+			idTracking.remove(contact);
 		}
 	}
 	
 	/**
 	 * Default constructor.
 	 */
-	public TrackingContactIds() {
+	public Tracking() {
 		super("Tracking Contact IDs", 45.0);
 	}
 	
@@ -195,7 +210,7 @@ public class TrackingContactIds extends SimulationFrame {
 	 * @param args command line arguments
 	 */
 	public static void main(String[] args) {
-		TrackingContactIds simulation = new TrackingContactIds();
+		Tracking simulation = new Tracking();
 		simulation.run();
 	}
 }

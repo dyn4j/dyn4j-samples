@@ -25,7 +25,6 @@
 package org.dyn4j.samples;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -34,19 +33,20 @@ import org.dyn4j.dynamics.joint.MotorJoint;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Transform;
+import org.dyn4j.geometry.Vector2;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
 import org.dyn4j.world.World;
 
 /**
- * A simple scene showing how to drag an object around the scene
- * with the mouse using a MotorJoint.
+ * Use the mouse to move the green body to the blue body. Notice how
+ * the green body tries to work around the obstacles, but does not go
+ * through them.
  * @author William Bittle
- * @version 3.2.1
- * @since 3.2.0
- * @see PlayerControl
+ * @since 4.1.1
+ * @version 4.1.1
  */
-public class MouseDrag extends SimulationFrame {
+public class Maze extends SimulationFrame {
 	/** The serial version id */
 	private static final long serialVersionUID = -4132057742762298086L;
 
@@ -64,19 +64,20 @@ public class MouseDrag extends SimulationFrame {
 	 */
 	private final class CustomMouseAdapter extends MouseAdapter {
 		@Override
-		public void mouseDragged(MouseEvent e) {
+		public void mouseMoved(MouseEvent e) {
 			// just create a new point and store it locally
 			// later, on the next update we'll check for it
 			point = new Point(e.getX(), e.getY());
-			super.mouseDragged(e);
 		}
 	}
 
 	/**
 	 * Default constructor for the window
 	 */
-	public MouseDrag() {
-		super("Mouse Drag", 32.0);
+	public Maze() {
+		super("Maze", 16.0);
+		
+		this.setMousePickingEnabled(false);
 		
 		// setup the mouse listening
 		MouseAdapter ml = new CustomMouseAdapter();
@@ -95,13 +96,13 @@ public class MouseDrag extends SimulationFrame {
 		// player control setup
 		
 		this.controller = new SimulationBody(Color.CYAN);
-	    this.controller.addFixture(Geometry.createCircle(0.5));
+	    this.controller.addFixture(Geometry.createCircle(0.25));
 	    this.controller.setMass(MassType.INFINITE);
 	    this.controller.setAtRestDetectionEnabled(false);
 	    this.world.addBody(this.controller);
 	    
 	    SimulationBody player = new SimulationBody(Color.GREEN);
-	    player.addFixture(Geometry.createCircle(0.5));
+	    player.addFixture(Geometry.createCircle(0.25));
 	    player.setMass(MassType.NORMAL);
 	    player.setAtRestDetectionEnabled(false);
 	    this.world.addBody(player);
@@ -112,37 +113,85 @@ public class MouseDrag extends SimulationFrame {
 	    control.setMaximumTorque(1000.0);
 	    this.world.addJoint(control);
 	    
-	    // obstacles
+	    // maze
+	    
+	    double wallWidth = 0.5;
+	    double mazeSize = 30;
+	    double mazeOffset = mazeSize / 2.0 - wallWidth / 2.0;
+	    double pathWidth = 1.5;
+	    
+	    // outer walls
 	    
 	    SimulationBody wall = new SimulationBody();
-	    wall.addFixture(Geometry.createRectangle(1, 10));
+	    wall.addFixture(Geometry.createRectangle(wallWidth, mazeSize));
 	    wall.setMass(MassType.INFINITE);
-	    wall.translate(2, 0);
+	    wall.translate(mazeOffset, 0);
 	    this.world.addBody(wall);
+	    
+	    SimulationBody wall2 = new SimulationBody();
+	    wall2.addFixture(Geometry.createRectangle(mazeSize - pathWidth, wallWidth));
+	    wall2.setMass(MassType.INFINITE);
+	    wall2.translate(pathWidth * 0.5, mazeOffset);
+	    this.world.addBody(wall2);
+	    
+	    SimulationBody wall3 = new SimulationBody();
+	    wall3.addFixture(Geometry.createRectangle(mazeSize - pathWidth, wallWidth));
+	    wall3.setMass(MassType.INFINITE);
+	    wall3.translate(-pathWidth * 0.5, -mazeOffset);
+	    this.world.addBody(wall3);
+	    
+	    SimulationBody wall4 = new SimulationBody();
+	    wall4.addFixture(Geometry.createRectangle(wallWidth, mazeSize));
+	    wall4.setMass(MassType.INFINITE);
+	    wall4.translate(-mazeOffset, 0);
+	    this.world.addBody(wall4);
+	    
+	    // inner walls
+	    
+	    for (int i = 0; i < 7; i++) {
+		    SimulationBody wall5 = new SimulationBody();
+		    wall5.addFixture(Geometry.createRectangle(wallWidth, mazeSize - pathWidth));
+		    wall5.setMass(MassType.INFINITE);
+		    wall5.translate(-mazeOffset + (i + 1) * pathWidth, (i % 2 == 0 ? 1 : -1) * pathWidth / 2.0);
+		    this.world.addBody(wall5);
+	    }
+	    
+	    for (int i = 0; i < 18; i++) {
+		    SimulationBody wall5 = new SimulationBody();
+		    wall5.addFixture(Geometry.createRectangle(mazeSize / 2 - pathWidth, wallWidth));
+		    wall5.setMass(MassType.INFINITE);
+		    wall5.translate(-mazeOffset + 12 * pathWidth + (i % 2 == 0 ? 1 : -1) * pathWidth / 2.0, -mazeOffset + (i + 1) * pathWidth);
+		    this.world.addBody(wall5);
+	    }
+	    
+	    for (int i = 0; i < 3; i++) {
+		    SimulationBody wall5 = new SimulationBody();
+		    wall5.addFixture(Geometry.createRectangle(wallWidth, mazeSize - pathWidth));
+		    wall5.setMass(MassType.INFINITE);
+		    wall5.translate(0 + (i + 7) * pathWidth, (i % 2 == 0 ? -1 : 1) * pathWidth / 2.0);
+		    this.world.addBody(wall5);
+	    }
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.dyn4j.samples.SimulationFrame#update(java.awt.Graphics2D, double)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#handleEvents()
 	 */
 	@Override
-	protected void update(Graphics2D g, double elapsedTime) {
+	protected void handleEvents() {
+		super.handleEvents();
 		
 		// check if the mouse has moved/dragged
 		if (this.point != null) {
-			// convert from screen space to world space
-			double x =  (this.point.getX() - this.canvas.getWidth() / 2.0) / this.scale;
-			double y = -(this.point.getY() - this.canvas.getHeight() / 2.0) / this.scale;
+			Vector2 v = this.toWorldCoordinates(this.point);
 			
 			// reset the transform of the controller body
 			Transform tx = new Transform();
-			tx.translate(x, y);
+			tx.translate(v.x, v.y);
 			this.controller.setTransform(tx);
 			
 			// clear the point
 			this.point = null;
 		}
-		
-		super.update(g, elapsedTime);
 	}
 	
 	/**
@@ -150,7 +199,7 @@ public class MouseDrag extends SimulationFrame {
 	 * @param args command line arguments
 	 */
 	public static void main(String[] args) {
-		MouseDrag simulation = new MouseDrag();
+		Maze simulation = new Maze();
 		simulation.run();
 	}
 }

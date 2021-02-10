@@ -24,8 +24,6 @@
  */
 package org.dyn4j.samples;
 
-import java.awt.Graphics2D;
-
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.dynamics.joint.RevoluteJoint;
 import org.dyn4j.geometry.Convex;
@@ -50,6 +48,7 @@ public class Ragdoll extends SimulationFrame {
 	 */
 	public Ragdoll() {
 		super("Ragdoll", 64.0);
+		this.setOffsetY(300);
 	}
 	
 	/**
@@ -304,17 +303,6 @@ public class Ragdoll extends SimulationFrame {
 	    leftFemurToLeftTibia.setMaximumMotorTorque(0.0);
 	    leftFemurToLeftTibia.setCollisionAllowed(false);
 	    world.addJoint(leftFemurToLeftTibia);
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.dyn4j.samples.SimulationFrame#render(java.awt.Graphics2D, double)
-	 */
-	@Override
-	protected void render(Graphics2D g, double elapsedTime) {
-		// move the view a bit
-		g.translate(0, 300);
-		
-		super.render(g, elapsedTime);
 	}
 	
 	/**

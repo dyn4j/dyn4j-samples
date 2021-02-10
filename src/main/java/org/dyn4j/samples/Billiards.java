@@ -24,13 +24,15 @@
  */
 package org.dyn4j.samples;
 
-import java.awt.Graphics2D;
+import java.awt.Color;
 
-import org.dyn4j.world.World;
+import org.dyn4j.collision.Filter;
+import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
+import org.dyn4j.world.World;
 
 /**
  * A simple scene of two billiard balls colliding with one another
@@ -50,7 +52,7 @@ public final class Billiards extends SimulationFrame {
 	 * Default constructor.
 	 */
 	public Billiards() {
-		super("Billiards", 300.0);
+		super("Billiards", 250.0);
 	}
 	
 	/* (non-Javadoc)
@@ -60,42 +62,119 @@ public final class Billiards extends SimulationFrame {
 	protected void initializeWorld() {
 		// no gravity on a top-down view of a billiards game
 		this.world.setGravity(World.ZERO_GRAVITY);
+		this.world.getSettings().setRestitutionVelocity(0.0);
 		
 		// create all your bodies/joints
 		
-		SimulationBody wallr = new SimulationBody();
-		wallr.addFixture(Geometry.createRectangle(0.2, 10));
-		wallr.translate(2, 0);
-		wallr.setMass(MassType.INFINITE);
-		world.addBody(wallr);
+		final double edgeDepth = 0.29 / 2.0;
+		final double tableWidth = 1.83;
+		final double tableHeight = 1.12;
 		
-		SimulationBody ball1 = new SimulationBody();
-		ball1.addFixture(Geometry.createCircle(0.028575), //  2.25 in diameter = 0.028575 m radius
-				217.97925, 								  //  0.126 oz/in^3 = 217.97925 kg/m^3
-				0.08,
-				0.9);
-		ball1.translate(-1.0, 0.0);
-		//ball1.setLinearVelocity(5.36448, 0.0); 		  // 12 mph = 5.36448 m/s
-		ball1.setLinearVelocity(2, 0);					  //  so we can see the bouncing
-		ball1.setMass(MassType.NORMAL);
-		this.world.addBody(ball1);
+		final double halfTableWidth = tableWidth / 2.0;
+		final double halfTableHeight = tableHeight / 2.0;
+		final double halfEdgeDepth = edgeDepth / 2.0;
 		
-		SimulationBody ball2 = new SimulationBody();
-		ball2.addFixture(Geometry.createCircle(0.028575), 217.97925, 0.08, 0.9);
-		ball2.translate(1.0, 0.0);
-		ball2.setMass(MassType.NORMAL);
-		this.world.addBody(ball2);
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.dyn4j.samples.SimulationFrame#render(java.awt.Graphics2D, double)
-	 */
-	@Override
-	protected void render(Graphics2D g, double elapsedTime) {
-		// move the view a bit
-		g.translate(-200, 0);
+		// 2.25 in diameter = 0.028575 m radius
+		final double ballRadius = 0.028575;
 		
-		super.render(g, elapsedTime);
+		// 0.126 oz/in^3 = 217.97925 kg/m^3
+		final double ballDensity = 217.97925;
+		
+		final double ballFriction = 0.08;
+		final double ballRestitution = 0.9;
+		
+		SimulationBody bottom = new SimulationBody(new Color(60, 164, 114));
+		BodyFixture bf = bottom.addFixture(Geometry.createRectangle(tableWidth, tableHeight), 1.0, 0.0, 0.0);
+		bf.setFilter(new Filter() {
+			@Override
+			public boolean isAllowed(Filter filter) {
+				return false;
+			}
+		});
+		bottom.setMass(MassType.INFINITE);
+		world.addBody(bottom);
+		
+		SimulationBody wallRight = new SimulationBody(new Color(150, 75, 0));
+		wallRight.addFixture(Geometry.createRectangle(edgeDepth, tableHeight), 1.0, 0.4, 0.3);
+		wallRight.translate(halfTableWidth - halfEdgeDepth, 0);
+		wallRight.setMass(MassType.INFINITE);
+		world.addBody(wallRight);
+		
+		SimulationBody wallLeft = new SimulationBody(new Color(150, 75, 0));
+		wallLeft.addFixture(Geometry.createRectangle(edgeDepth, tableHeight), 1.0, 0.4, 0.3);
+		wallLeft.translate(-halfTableWidth + halfEdgeDepth, 0);
+		wallLeft.setMass(MassType.INFINITE);
+		world.addBody(wallLeft);
+
+		SimulationBody wallTop = new SimulationBody(new Color(150, 75, 0));
+		wallTop.addFixture(Geometry.createRectangle(tableWidth, edgeDepth), 1.0, 0.4, 0.3);
+		wallTop.translate(0, halfTableHeight - halfEdgeDepth);
+		wallTop.setMass(MassType.INFINITE);
+		world.addBody(wallTop);
+		
+		SimulationBody wallBottom = new SimulationBody(new Color(150, 75, 0));
+		wallBottom.addFixture(Geometry.createRectangle(tableWidth, edgeDepth), 1.0, 0.4, 0.3);
+		wallBottom.translate(0, -halfTableHeight + halfEdgeDepth);
+		wallBottom.setMass(MassType.INFINITE);
+		world.addBody(wallBottom);
+		
+		SimulationBody cueBall = new SimulationBody(new Color(255, 255, 255));
+		cueBall.addFixture(Geometry.createCircle(ballRadius), ballDensity, ballFriction, ballRestitution);
+		cueBall.translate(-0.25, 0.0);
+		cueBall.setLinearVelocity(2.0, 0.0);
+		cueBall.setLinearDamping(0.3);
+		cueBall.setAngularDamping(0.8);
+		cueBall.setMass(MassType.NORMAL);
+		this.world.addBody(cueBall);
+		
+		// billiard colors
+		Color[] colors = new Color[] {
+			// solid
+			new Color(255, 215, 0),	
+			new Color(0, 0, 255),
+			new Color(255, 0, 0),
+			new Color(75, 0, 130),
+			new Color(255, 69, 0),
+			new Color(34, 139, 34),
+			new Color(128, 0, 0),
+			new Color(0, 0, 0),
+			
+			// striped (just do a lighter color)
+			new Color(255, 215, 0).darker(),	
+			new Color(0, 0, 255).darker(),
+			new Color(255, 0, 0).darker(),
+			new Color(75, 0, 130).brighter(),
+			new Color(255, 69, 0).darker(),
+			new Color(34, 139, 34).brighter(),
+			new Color(128, 0, 0).brighter(),
+			new Color(0, 0, 0).brighter()
+		};
+		
+		final int rackSize = 5;
+		final double sx = 0.45;
+		final double sy = 0.0;
+		
+		// 5 columns
+		int n = 0;
+		for (int i = 0; i < rackSize; i++) {
+			double x = sx - (ballRadius * 2.0 * (double)i);
+			double columnHeight = ballRadius * 2.0 * (rackSize - i); 
+			double csy = columnHeight / 2.0;
+			// 5 - i rows
+			for (int j = 0; j < rackSize - i; j++) {
+				double y = sy + csy - (ballRadius * 2.0 * j);
+				
+				SimulationBody ball = new SimulationBody(colors[n]);
+				ball.addFixture(Geometry.createCircle(ballRadius), ballDensity, ballFriction, ballRestitution);
+				ball.translate(x, y);
+				ball.setLinearDamping(0.3);
+				ball.setAngularDamping(0.8);
+				ball.setMass(MassType.NORMAL);
+				this.world.addBody(ball);
+				
+				n++;
+			}
+		}
 	}
 	
 	/**

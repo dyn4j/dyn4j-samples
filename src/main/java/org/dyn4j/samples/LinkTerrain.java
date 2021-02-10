@@ -24,19 +24,9 @@
  */
 package org.dyn4j.samples;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.Line2D;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.dyn4j.collision.narrowphase.Sat;
-import org.dyn4j.dynamics.contact.ContactConstraint;
-import org.dyn4j.dynamics.contact.SolvedContact;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.Link;
 import org.dyn4j.geometry.MassType;
@@ -55,12 +45,6 @@ public class LinkTerrain extends SimulationFrame {
 	/** The serial version id */
 	private static final long serialVersionUID = -3675099977835892473L;
 
-	/** True if a step should be performed */
-	private final AtomicBoolean stepPressed = new AtomicBoolean(false);
-	
-	/** The manual step count */
-	private int step = 0;
-	
 	/**
 	 * Default constructor for the window
 	 */
@@ -68,37 +52,6 @@ public class LinkTerrain extends SimulationFrame {
 		super("Link Terrain", 64.0);
 		
 		this.pause();
-		
-		KeyListener listener = new CustomKeyListener();
-		this.addKeyListener(listener);
-		this.canvas.addKeyListener(listener);
-	}
-	
-	/**
-	 * Custom key adapter to listen for key events.
-	 * @author William Bittle
-	 * @version 3.2.1
-	 * @since 3.2.0
-	 */
-	private class CustomKeyListener extends KeyAdapter {
-		@Override
-		public void keyPressed(KeyEvent e) {
-			switch (e.getKeyCode()) {
-				case KeyEvent.VK_SPACE:
-					if (isPaused()) {
-						resume();
-					} else {
-						pause();
-					}
-					break;
-				case KeyEvent.VK_ENTER:
-					if (isPaused()) {
-						// only allow manual stepping if paused
-						stepPressed.set(true);
-					}
-			}
-			
-		}
 	}
 	
 	/**
@@ -186,46 +139,6 @@ public class LinkTerrain extends SimulationFrame {
 		this.world.addBody(slider);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.dyn4j.samples.SimulationFrame#render(java.awt.Graphics2D, double)
-	 */
-	@Override
-	protected void render(Graphics2D g, double elapsedTime) {
-		if (this.stepPressed.get()) {
-			System.out.println(++step);
-			this.stepPressed.set(false);
-			this.world.step(1);
-		}
-		
-		super.render(g, elapsedTime);
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.dyn4j.samples.SimulationFrame#render(java.awt.Graphics2D, double, org.dyn4j.samples.SimulationBody)
-	 */
-	@Override
-	protected void render(Graphics2D g, double elapsedTime, SimulationBody body) {
-		super.render(g, elapsedTime, body);
-		List<ContactConstraint<SimulationBody>> contacts = this.world.getContacts(body);
-		for (ContactConstraint<SimulationBody> cc : contacts) {
-			for (SolvedContact c : cc.getContacts()) {
-				// draw the contact point
-				final double r = 0.05;
-				final double d = r * 2;
-				Ellipse2D.Double cp = new Ellipse2D.Double((c.getPoint().x - r) * this.scale, (c.getPoint().y - r) * this.scale, d * this.scale, d * this.scale);
-				g.setColor(Color.GREEN);
-				g.fill(cp);
-				
-				// draw the contact normal
-				Line2D.Double vn = new Line2D.Double(
-						c.getPoint().x * this.scale, c.getPoint().y * this.scale, 
-						(c.getPoint().x + -cc.getNormal().x * c.getDepth() * 100) * this.scale, (c.getPoint().y + -cc.getNormal().y * c.getDepth() * 100) * this.scale);
-				g.setColor(Color.BLUE);
-				g.draw(vn);
-			}
-		}
-	}
-	
 	/**
 	 * Entry point for the example application.
 	 * @param args command line arguments

@@ -47,7 +47,7 @@ import org.dyn4j.samples.framework.SimulationFrame;
  * @version 3.2.1
  * @since 3.2.0
  */
-public class RenderingImagesOnBodies extends SimulationFrame {
+public class Images extends SimulationFrame {
 	/** Generated serial version id */
 	private static final long serialVersionUID = -4165832122583574360L;
 	
@@ -62,7 +62,7 @@ public class RenderingImagesOnBodies extends SimulationFrame {
 	/** Helper function to read the images from the class path */
 	private static final BufferedImage getImageSuppressExceptions(String pathOnClasspath) {
 		try {
-			return ImageIO.read(RenderingImagesOnBodies.class.getResource(pathOnClasspath));
+			return ImageIO.read(Images.class.getResource(pathOnClasspath));
 		} catch (IOException e) {
 			return null;
 		}
@@ -120,7 +120,7 @@ public class RenderingImagesOnBodies extends SimulationFrame {
 	/**
 	 * Default constructor.
 	 */
-	public RenderingImagesOnBodies() {
+	public Images() {
 		super("Rendering Images on Bodies", 45.0);
 	}
 	
@@ -165,7 +165,7 @@ public class RenderingImagesOnBodies extends SimulationFrame {
 	 * @param args command line arguments
 	 */
 	public static void main(String[] args) {
-		RenderingImagesOnBodies simulation = new RenderingImagesOnBodies();
+		Images simulation = new Images();
 		simulation.run();
 	}
 }

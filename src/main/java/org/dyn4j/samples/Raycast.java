@@ -117,7 +117,7 @@ public class Raycast extends SimulationFrame {
 		super.render(g, elapsedTime);
 		
 		final double r = 4.0;
-		final double scale = this.scale;
+		final double scale = this.getScale();
 		final double length = 100;
 		
 		Ray ray = new Ray(Math.toRadians(45.0));

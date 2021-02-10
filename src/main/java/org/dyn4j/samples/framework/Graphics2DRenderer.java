@@ -141,6 +141,12 @@ public final class Graphics2DRenderer {
 		// draw the outline
 		g.setColor(getOutlineColor(color));
 		g.draw(p);
+		
+		// draw a line from the center to the first point
+		p = new Path2D.Double();
+		p.moveTo(polygon.getCenter().x * scale, polygon.getCenter().y * scale);
+		p.lineTo(vertices[0].x * scale, vertices[0].y * scale);
+		g.draw(p);
 	}
 	
 	/**

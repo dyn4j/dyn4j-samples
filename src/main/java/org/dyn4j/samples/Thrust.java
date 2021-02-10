@@ -161,13 +161,13 @@ public class Thrust extends SimulationFrame {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.dyn4j.samples.SimulationFrame#update(java.awt.Graphics2D, double)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#render(java.awt.Graphics2D, double)
 	 */
 	@Override
-	protected void update(Graphics2D g, double elapsedTime) {
-		super.update(g, elapsedTime);
+	protected void render(Graphics2D g, double elapsedTime) {
+		super.render(g, elapsedTime);
 		
-		final double scale = this.scale;
+		final double scale = this.getScale();
 		final double force = 1000 * elapsedTime;
 		
         final Vector2 r = new Vector2(ship.getTransform().getRotationAngle() + Math.PI * 0.5);

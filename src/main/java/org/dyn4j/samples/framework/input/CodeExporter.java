@@ -1,4 +1,28 @@
-package org.dyn4j.samples;
+/*
+ * Copyright (c) 2010-2021 William Bittle  http://www.dyn4j.org/
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without modification, are permitted 
+ * provided that the following conditions are met:
+ * 
+ *   * Redistributions of source code must retain the above copyright notice, this list of conditions 
+ *     and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above copyright notice, this list of conditions 
+ *     and the following disclaimer in the documentation and/or other materials provided with the 
+ *     distribution.
+ *   * Neither the name of dyn4j nor the names of its contributors may be used to endorse or 
+ *     promote products derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR 
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
+ * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR 
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER 
+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT 
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+package org.dyn4j.samples.framework.input;
 
 import java.text.MessageFormat;
 import java.util.HashMap;
@@ -10,9 +34,21 @@ import org.dyn4j.collision.AxisAlignedBounds;
 import org.dyn4j.collision.Bounds;
 import org.dyn4j.collision.CategoryFilter;
 import org.dyn4j.collision.Filter;
+import org.dyn4j.collision.broadphase.AABBExpansionMethod;
+import org.dyn4j.collision.broadphase.AABBProducer;
 import org.dyn4j.collision.broadphase.BroadphaseDetector;
+import org.dyn4j.collision.broadphase.BroadphaseFilter;
+import org.dyn4j.collision.broadphase.CollisionItemAABBProducer;
+import org.dyn4j.collision.broadphase.CollisionItemBroadphaseDetector;
+import org.dyn4j.collision.broadphase.CollisionItemBroadphaseFilter;
 import org.dyn4j.collision.broadphase.DynamicAABBTree;
+import org.dyn4j.collision.broadphase.NullAABBExpansionMethod;
 import org.dyn4j.collision.broadphase.Sap;
+import org.dyn4j.collision.broadphase.StaticValueAABBExpansionMethod;
+import org.dyn4j.collision.continuous.ConservativeAdvancement;
+import org.dyn4j.collision.continuous.TimeOfImpactDetector;
+import org.dyn4j.collision.manifold.ClippingManifoldSolver;
+import org.dyn4j.collision.manifold.ManifoldSolver;
 import org.dyn4j.collision.narrowphase.Gjk;
 import org.dyn4j.collision.narrowphase.NarrowphaseDetector;
 import org.dyn4j.collision.narrowphase.Sat;
@@ -20,7 +56,6 @@ import org.dyn4j.dynamics.Body;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.dynamics.ContinuousDetectionMode;
 import org.dyn4j.dynamics.Settings;
-import org.dyn4j.world.World;
 import org.dyn4j.dynamics.joint.AngleJoint;
 import org.dyn4j.dynamics.joint.DistanceJoint;
 import org.dyn4j.dynamics.joint.FrictionJoint;
@@ -47,8 +82,15 @@ import org.dyn4j.geometry.Slice;
 import org.dyn4j.geometry.Triangle;
 import org.dyn4j.geometry.Vector2;
 import org.dyn4j.resources.Messages;
+import org.dyn4j.world.World;
 
-public class WorldExporter {
+/**
+ * A simple example of how you might serialize the state of a world.
+ * @author William Bittle
+ * @version 4.1.1
+ * @since 4.1.1
+ */
+public class CodeExporter {
 	/** The line separator for the system */
 	private static final String NEW_LINE = System.getProperty("line.separator");
 	
@@ -110,18 +152,45 @@ public class WorldExporter {
 			sb.append(TAB2).append("world.setGravity(").append(export(g)).append(");").append(NEW_LINE);
 		}
 
-		BroadphaseDetector<?, ?> bpd = world.getBroadphaseDetector();
-		NarrowphaseDetector npd = world.getNarrowphaseDetector();
-//		ManifoldSolver msr = world.getManifoldSolver();
-//		TimeOfImpactDetector tid = world.getTimeOfImpactDetector();
-		if (bpd instanceof Sap) {
-			sb.append(TAB2).append("world.setBroadphaseDetector(new Sap<Body, BodyFixture>());").append(NEW_LINE);
-		} else if (bpd instanceof DynamicAABBTree) {
-			// don't output anything since its the default
+		CollisionItemBroadphaseDetector<?, ?> bpd = world.getBroadphaseDetector();
+		AABBProducer<?> ap = bpd.getAABBProducer();
+		AABBExpansionMethod<?> em = bpd.getAABBExpansionMethod();
+		BroadphaseFilter<?> bpf = bpd.getBroadphaseFilter();
+		BroadphaseDetector<?> bp = bpd.getDecoratedBroadphaseDetector();
+		
+		if (ap instanceof CollisionItemAABBProducer) {
+			sb.append(TAB2).append("AABBProducer<CollisionItem<Body, BodyFixture>> aabbProducer = new CollisionItemAABBProducer<Body, BodyFixture>();").append(NEW_LINE);
+		} else {
+			throw new UnsupportedOperationException(MessageFormat.format(Messages.getString("exception.persist.unknownClass"), ap.getClass().getName())); 
+		}
+		
+		if (em instanceof StaticValueAABBExpansionMethod) {
+			StaticValueAABBExpansionMethod<?> method = (StaticValueAABBExpansionMethod<?>)em;
+			sb.append(TAB2).append("AABBExpansionMethod<CollisionItem<Body, BodyFixture>> aabbExpansionMethod = new StaticValueAABBExpansionMethod<CollisionItem<Body, BodyFixture>>(" + method.getExpansion() + ");").append(NEW_LINE);
+		} else if (em instanceof NullAABBExpansionMethod) {
+			sb.append(TAB2).append("AABBExpansionMethod<CollisionItem<Body, BodyFixture>> aabbExpansionMethod = new NullAABBExpansionMethod<CollisionItem<Body, BodyFixture>>();").append(NEW_LINE);
+		} else {
+			throw new UnsupportedOperationException(MessageFormat.format(Messages.getString("exception.persist.unknownClass"), ap.getClass().getName())); 
+		}
+		
+		if (bpf instanceof CollisionItemBroadphaseFilter) {
+			sb.append(TAB2).append("BroadphaseFilter<CollisionItem<Body, BodyFixture>> broadphaseFilter = new CollisionItemBroadphaseFilter<Body, BodyFixture>();").append(NEW_LINE);
+		} else {
+			throw new UnsupportedOperationException(MessageFormat.format(Messages.getString("exception.persist.unknownClass"), ap.getClass().getName())); 
+		}
+		
+		if (bp instanceof Sap) {
+			sb.append(TAB2).append("BroadphaseDetector<CollisionItem<Body, BodyFixture>> bp = new Sap<CollisionItem<Body, BodyFixture>>(broadphaseFilter, aabbProducer, aabbExpansionMethod);").append(NEW_LINE);
+		} else if (bp instanceof DynamicAABBTree) {
+			sb.append(TAB2).append("BroadphaseDetector<CollisionItem<Body, BodyFixture>> bp = new DynamicAABBTree<CollisionItem<Body, BodyFixture>>(broadphaseFilter, aabbProducer, aabbExpansionMethod);").append(NEW_LINE);
 		} else {
 			throw new UnsupportedOperationException(MessageFormat.format(Messages.getString("exception.persist.unknownClass"), bpd.getClass().getName()));
 		}
 		
+		sb.append(TAB2).append("CollisionItemBroadphaseDetector<Body, BodyFixture> bpd = new CollisionItemBroadphaseDetectorAdapter<Body, BodyFixture>(bp);").append(NEW_LINE);
+		sb.append(TAB2).append("world.setBroadphaseDetector(bpd);").append(NEW_LINE);
+		
+		NarrowphaseDetector npd = world.getNarrowphaseDetector();
 		if (npd instanceof Sat) {
 			sb.append(TAB2).append("world.setNarrowphaseDetector(new Sat());").append(NEW_LINE);
 		} else if (npd instanceof Gjk) {
@@ -131,18 +200,20 @@ public class WorldExporter {
 		}
 		
 		// don't output anything since its the default
-//		if (msr instanceof ClippingManifoldSolver) {
-//			sb.append(TAB2).append("world.setManifoldSolver(new ClippingManifoldSolver());").append(NEW_LINE);
-//		} else {
-//			throw new UnsupportedOperationException(MessageFormat.format(Messages.getString("exception.persist.unknownClass"), msr.getClass().getName()));
-//		}
+		ManifoldSolver msr = world.getManifoldSolver();
+		if (msr instanceof ClippingManifoldSolver) {
+			sb.append(TAB2).append("world.setManifoldSolver(new ClippingManifoldSolver());").append(NEW_LINE);
+		} else {
+			throw new UnsupportedOperationException(MessageFormat.format(Messages.getString("exception.persist.unknownClass"), msr.getClass().getName()));
+		}
 		
 		// don't output anything since its the default
-//		if (tid instanceof ConservativeAdvancement) {
-//			sb.append(TAB2).append("world.setTimeOfImpactDetector(new ConservativeAdvancement());").append(NEW_LINE);
-//		} else {
-//			throw new UnsupportedOperationException(MessageFormat.format(Messages.getString("exception.persist.unknownClass"), tid.getClass().getName()));
-//		}
+		TimeOfImpactDetector tid = world.getTimeOfImpactDetector();
+		if (tid instanceof ConservativeAdvancement) {
+			sb.append(TAB2).append("world.setTimeOfImpactDetector(new ConservativeAdvancement());").append(NEW_LINE);
+		} else {
+			throw new UnsupportedOperationException(MessageFormat.format(Messages.getString("exception.persist.unknownClass"), tid.getClass().getName()));
+		}
 		
 		Bounds bounds = world.getBounds();
 		if (bounds == null) {

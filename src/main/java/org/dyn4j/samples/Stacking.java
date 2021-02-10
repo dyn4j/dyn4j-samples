@@ -24,24 +24,23 @@
  */
 package org.dyn4j.samples;
 
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
+import org.dyn4j.geometry.Vector2;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
 
 /**
- * A simple scene showing how to capture mouse input and create
- * bodies dynamically.
+ * A simple scene where you use Mouse Button 3 to create boxes.
  * @author William Bittle
- * @version 3.2.1
+ * @version 4.1.1
  * @since 3.2.0
  */
-public class MouseInteraction extends SimulationFrame {
+public class Stacking extends SimulationFrame {
 	/** The serial version id */
 	private static final long serialVersionUID = -1366264828445805140L;
 
@@ -58,7 +57,9 @@ public class MouseInteraction extends SimulationFrame {
 		@Override
 		public void mousePressed(MouseEvent e) {
 			// store the mouse click postion for use later
-			point = new Point(e.getX(), e.getY());
+			if (e.getButton() == MouseEvent.BUTTON3) {
+				point = new Point(e.getX(), e.getY());
+			}
 		}
 		
 		@Override
@@ -70,8 +71,8 @@ public class MouseInteraction extends SimulationFrame {
 	/**
 	 * Default constructor.
 	 */
-	public MouseInteraction() {
-		super("Mouse Interaction", 32.0);
+	public Stacking() {
+		super("Stacking", 32.0);
 		
 		MouseAdapter ml = new CustomMouseAdapter();
 		this.canvas.addMouseMotionListener(ml);
@@ -84,35 +85,33 @@ public class MouseInteraction extends SimulationFrame {
 	 */
 	protected void initializeWorld() {
 		SimulationBody floor = new SimulationBody();
-	    floor.addFixture(Geometry.createRectangle(20, 1));
+	    floor.addFixture(Geometry.createRectangle(20, 1), 1.0, 0.5, 0.0);
 	    floor.setMass(MassType.INFINITE);
 	    this.world.addBody(floor);
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.dyn4j.samples.SimulationFrame#update(java.awt.Graphics2D, double)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#handleEvents()
 	 */
 	@Override
-	protected void update(Graphics2D g, double elapsedTime) {
+	protected void handleEvents() {
+		super.handleEvents();
 		
 		// see if the user clicked
 		if (this.point != null) {
 			// convert from screen space to world space coordinates
-			double x =  (this.point.getX() - this.canvas.getWidth() / 2.0) / this.scale;
-			double y = -(this.point.getY() - this.canvas.getHeight() / 2.0) / this.scale;
+			Vector2 v = this.toWorldCoordinates(this.point);
 			
 			// create a new body
 			SimulationBody no = new SimulationBody();
-			no.addFixture(Geometry.createSquare(0.5));
-			no.translate(x, y);
+			no.addFixture(Geometry.createSquare(0.5), 1.0, 0.8, 0.0);
+			no.translate(v.x, v.y);
 			no.setMass(MassType.NORMAL);
 			this.world.addBody(no);
 			
 			// clear the point
 			this.point = null;
 		}
-
-		super.update(g, elapsedTime);
 	}
 	
 	/**
@@ -120,7 +119,7 @@ public class MouseInteraction extends SimulationFrame {
 	 * @param args command line arguments
 	 */
 	public static void main(String[] args) {
-		MouseInteraction simulation = new MouseInteraction();
+		Stacking simulation = new Stacking();
 		simulation.run();
 	}
 }

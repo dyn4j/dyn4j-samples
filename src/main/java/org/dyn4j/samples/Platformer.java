@@ -25,7 +25,6 @@
 package org.dyn4j.samples;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -57,14 +56,14 @@ import org.dyn4j.world.listener.StepListenerAdapter;
  * @since 3.2.5
  * @version 3.2.0
  */
-public class SimplePlatformer extends SimulationFrame {
+public class Platformer extends SimulationFrame {
 	/** The serial version id */
 	private static final long serialVersionUID = -313391186714427055L;
 
 	/**
 	 * Default constructor for the window
 	 */
-	public SimplePlatformer() {
+	public Platformer() {
 		super("Simple Platformer", 32.0);
 		
 		KeyListener listener = new CustomKeyListener();
@@ -212,10 +211,12 @@ public class SimplePlatformer extends SimulationFrame {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.dyn4j.samples.SimulationFrame#update(java.awt.Graphics2D, double)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#handleEvents()
 	 */
 	@Override
-	protected void update(Graphics2D g, double elapsedTime) {
+	protected void handleEvents() {
+		super.handleEvents();
+		
 		// apply a torque based on key input
 		if (this.leftPressed.get()) {
 			wheel.applyTorque(Math.PI / 2);
@@ -228,7 +229,6 @@ public class SimplePlatformer extends SimulationFrame {
 		} else {
 			wheel.setColor(WHEEL_OFF_COLOR);
 		}
-		super.update(g, elapsedTime);
 	}
 	
 	/**
@@ -236,7 +236,7 @@ public class SimplePlatformer extends SimulationFrame {
 	 * @param args command line arguments
 	 */
 	public static void main(String[] args) {
-		SimplePlatformer simulation = new SimplePlatformer();
+		Platformer simulation = new Platformer();
 		simulation.run();
 	}
 }
