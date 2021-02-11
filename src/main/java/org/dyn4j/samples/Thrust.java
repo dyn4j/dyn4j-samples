@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2016 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2021 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -26,11 +26,8 @@ package org.dyn4j.samples;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.geom.Line2D;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Geometry;
@@ -38,13 +35,14 @@ import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Vector2;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
+import org.dyn4j.samples.framework.input.BooleanStateKeyboardInputHandler;
 
 /**
  * Moderately complex scene of a rocket that has propulsion at various points
  * to allow control.  Control is given by the left, right, up, and down keys
  * and applies forces when pressed.
  * @author William Bittle
- * @version 3.2.1
+ * @version 4.1.1
  * @since 3.2.0
  */
 public class Thrust extends SimulationFrame {
@@ -54,57 +52,12 @@ public class Thrust extends SimulationFrame {
 	/** The controlled ship */
 	private SimulationBody ship;
 	
-	// Some booleans to indicate that a key is pressed
+	// input control
 	
-	private AtomicBoolean forwardThrustOn = new AtomicBoolean(false);
-	private AtomicBoolean reverseThrustOn = new AtomicBoolean(false);
-	private AtomicBoolean leftThrustOn = new AtomicBoolean(false);
-	private AtomicBoolean rightThrustOn = new AtomicBoolean(false);
-	
-	/**
-	 * Custom key adapter to listen for key events.
-	 * @author William Bittle
-	 * @version 3.2.1
-	 * @since 3.2.0
-	 */
-	private class CustomKeyListener extends KeyAdapter {
-		@Override
-		public void keyPressed(KeyEvent e) {
-			switch (e.getKeyCode()) {
-				case KeyEvent.VK_UP:
-					forwardThrustOn.set(true);
-					break;
-				case KeyEvent.VK_DOWN:
-					reverseThrustOn.set(true);
-					break;
-				case KeyEvent.VK_LEFT:
-					leftThrustOn.set(true);
-					break;
-				case KeyEvent.VK_RIGHT:
-					rightThrustOn.set(true);
-					break;
-			}
-			
-		}
-		
-		@Override
-		public void keyReleased(KeyEvent e) {
-			switch (e.getKeyCode()) {
-				case KeyEvent.VK_UP:
-					forwardThrustOn.set(false);
-					break;
-				case KeyEvent.VK_DOWN:
-					reverseThrustOn.set(false);
-					break;
-				case KeyEvent.VK_LEFT:
-					leftThrustOn.set(false);
-					break;
-				case KeyEvent.VK_RIGHT:
-					rightThrustOn.set(false);
-					break;
-			}
-		}
-	}
+	private final BooleanStateKeyboardInputHandler up;
+	private final BooleanStateKeyboardInputHandler down;
+	private final BooleanStateKeyboardInputHandler left;
+	private final BooleanStateKeyboardInputHandler right;
 	
 	/**
 	 * Default constructor.
@@ -112,9 +65,15 @@ public class Thrust extends SimulationFrame {
 	public Thrust() {
 		super("Thrust", 64.0);
 		
-		KeyListener listener = new CustomKeyListener();
-		this.addKeyListener(listener);
-		this.canvas.addKeyListener(listener);
+		this.up = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_UP);
+		this.down = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_DOWN);
+		this.left = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_LEFT);
+		this.right = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_RIGHT);
+		
+		this.up.install();
+		this.down.install();
+		this.left.install();
+		this.right.install();
 	}
 	
 	/**
@@ -174,7 +133,7 @@ public class Thrust extends SimulationFrame {
         final Vector2 c = ship.getWorldCenter();
 		
 		// apply thrust
-        if (this.forwardThrustOn.get()) {
+        if (this.up.isActive()) {
         	Vector2 f = r.product(force);
         	Vector2 p = c.sum(r.product(-0.9));
         	
@@ -183,7 +142,7 @@ public class Thrust extends SimulationFrame {
         	g.setColor(Color.ORANGE);
         	g.draw(new Line2D.Double(p.x * scale, p.y * scale, (p.x - f.x) * scale, (p.y - f.y) * scale));
         } 
-        if (this.reverseThrustOn.get()) {
+        if (this.down.isActive()) {
         	Vector2 f = r.product(-force);
         	Vector2 p = c.sum(r.product(0.9));
         	
@@ -192,7 +151,7 @@ public class Thrust extends SimulationFrame {
         	g.setColor(Color.ORANGE);
         	g.draw(new Line2D.Double(p.x * scale, p.y * scale, (p.x - f.x) * scale, (p.y - f.y) * scale));
         }
-        if (this.leftThrustOn.get()) {
+        if (this.left.isActive()) {
         	Vector2 f1 = r.product(force * 0.1).right();
         	Vector2 f2 = r.product(force * 0.1).left();
         	Vector2 p1 = c.sum(r.product(0.9));
@@ -207,7 +166,7 @@ public class Thrust extends SimulationFrame {
         	g.draw(new Line2D.Double(p1.x * scale, p1.y * scale, (p1.x - f1.x) * scale, (p1.y - f1.y) * scale));
         	g.draw(new Line2D.Double(p2.x * scale, p2.y * scale, (p2.x - f2.x) * scale, (p2.y - f2.y) * scale));
         }
-        if (this.rightThrustOn.get()) {
+        if (this.right.isActive()) {
         	Vector2 f1 = r.product(force * 0.1).left();
         	Vector2 f2 = r.product(force * 0.1).right();
         	Vector2 p1 = c.sum(r.product(0.9));

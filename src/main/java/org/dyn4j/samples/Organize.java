@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2016 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2020 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -48,8 +48,8 @@ import org.dyn4j.samples.framework.SimulationFrame;
  * distance = 0 DistanceJoints that causes the bodies to try to self
  * organize.
  * @author William Bittle
- * @since 3.2.1
- * @version 3.2.0
+ * @version 4.1.1
+ * @since 4.1.1
  */
 public class Organize extends SimulationFrame {
 	/** The serial version id */
@@ -67,8 +67,6 @@ public class Organize extends SimulationFrame {
 	/**
 	 * A custom mouse adapter for listening for mouse clicks.
 	 * @author William Bittle
-	 * @version 3.2.1
-	 * @since 3.2.0
 	 */
 	private final class CustomMouseAdapter extends MouseAdapter {
 		@Override
@@ -93,7 +91,7 @@ public class Organize extends SimulationFrame {
 	 * Default constructor.
 	 */
 	public Organize() {
-		super("Self-Organizing", 48.0);
+		super("Organize", 48.0);
 		
 		MouseAdapter ml = new CustomMouseAdapter();
 		this.canvas.addMouseMotionListener(ml);
@@ -189,7 +187,6 @@ public class Organize extends SimulationFrame {
 
 					DistanceJoint<SimulationBody> dj = new DistanceJoint<SimulationBody>(b1, b2, b1.getWorldCenter(), b2.getWorldCenter());
 					dj.setCollisionAllowed(true);
-					dj.setDistance(b1.getWorldCenter().distance(b2.getWorldCenter()));
 					dj.setDistance(0);
 					dj.setFrequency(1);
 					dj.setDampingRatio(1.0);

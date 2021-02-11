@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2016 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2021 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -59,8 +59,6 @@ public class Maze extends SimulationFrame {
 	/**
 	 * A custom mouse adapter to track mouse drag events.
 	 * @author William Bittle
-	 * @version 3.2.1
-	 * @since 3.2.0
 	 */
 	private final class CustomMouseAdapter extends MouseAdapter {
 		@Override

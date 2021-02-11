@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2016 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2021 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -65,7 +65,7 @@ public class Bridge extends SimulationFrame {
 	    ground.setMass(MassType.INFINITE);
 	    world.addBody(ground);
 
-	    final double y = 3.0;
+	    final double y = 2.0;
 	    final int n = 20;
 	    final double hn = n / 2.0;
 	    final double w = 1.0;

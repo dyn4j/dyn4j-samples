@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2016 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2021 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -41,7 +41,7 @@ import org.dyn4j.world.World;
  * Primarily used to illustrate the computation of the mass and size
  * of the balls.  See the {@link Billiards#initializeWorld()} method.
  * @author William Bittle
- * @version 3.2.1
+ * @version 4.1.1
  * @since 3.2.0
  */
 public final class Billiards extends SimulationFrame {
@@ -167,7 +167,7 @@ public final class Billiards extends SimulationFrame {
 				SimulationBody ball = new SimulationBody(colors[n]);
 				ball.addFixture(Geometry.createCircle(ballRadius), ballDensity, ballFriction, ballRestitution);
 				ball.translate(x, y);
-				ball.setLinearDamping(0.3);
+				ball.setLinearDamping(0.4);
 				ball.setAngularDamping(0.8);
 				ball.setMass(MassType.NORMAL);
 				this.world.addBody(ball);

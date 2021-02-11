@@ -55,7 +55,7 @@ import org.dyn4j.dynamics.joint.PinJoint;
 import org.dyn4j.geometry.AABB;
 import org.dyn4j.geometry.Transform;
 import org.dyn4j.geometry.Vector2;
-import org.dyn4j.samples.framework.input.BooleanStateKeyboardInputHandler;
+import org.dyn4j.samples.framework.input.ToggleStateKeyboardInputHandler;
 import org.dyn4j.samples.framework.input.CodeExporter;
 import org.dyn4j.samples.framework.input.MousePanningInputHandler;
 import org.dyn4j.samples.framework.input.MousePickingInputHandler;
@@ -95,18 +95,18 @@ public abstract class SimulationFrame extends JFrame {
 	
 	// interaction (mouse/keyboard)
 	
-	private final BooleanStateKeyboardInputHandler paused;
-	private final BooleanStateKeyboardInputHandler step;
+	private final ToggleStateKeyboardInputHandler paused;
+	private final ToggleStateKeyboardInputHandler step;
 	
 	private final MousePickingInputHandler picking;
 	private final MousePanningInputHandler panning;
 	private final MouseZoomInputHandler zoom;
 	
-	private final BooleanStateKeyboardInputHandler renderContacts;
-	private final BooleanStateKeyboardInputHandler renderBodyAABBs;
-	private final BooleanStateKeyboardInputHandler renderBodyRotationRadius;
-	private final BooleanStateKeyboardInputHandler renderFixtureAABBs;
-	private final BooleanStateKeyboardInputHandler renderFixtureRotationRadius;
+	private final ToggleStateKeyboardInputHandler renderContacts;
+	private final ToggleStateKeyboardInputHandler renderBodyAABBs;
+	private final ToggleStateKeyboardInputHandler renderBodyRotationRadius;
+	private final ToggleStateKeyboardInputHandler renderFixtureAABBs;
+	private final ToggleStateKeyboardInputHandler renderFixtureRotationRadius;
 	
 	/**
 	 * Constructor.
@@ -173,13 +173,13 @@ public abstract class SimulationFrame extends JFrame {
 		this.zoom = new MouseZoomInputHandler(this.canvas, this.camera, MouseEvent.BUTTON1);
 		this.zoom.install();
 		
-		this.paused = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_SPACE);
-		this.step = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_ENTER);
-		this.renderContacts = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_C);
-		this.renderBodyAABBs = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_B);
-		this.renderBodyRotationRadius = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_B);
-		this.renderFixtureAABBs = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_F);
-		this.renderFixtureRotationRadius = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_F);
+		this.paused = new ToggleStateKeyboardInputHandler(this.canvas, KeyEvent.VK_SPACE);
+		this.step = new ToggleStateKeyboardInputHandler(this.canvas, KeyEvent.VK_ENTER);
+		this.renderContacts = new ToggleStateKeyboardInputHandler(this.canvas, KeyEvent.VK_C);
+		this.renderBodyAABBs = new ToggleStateKeyboardInputHandler(this.canvas, KeyEvent.VK_B);
+		this.renderBodyRotationRadius = new ToggleStateKeyboardInputHandler(this.canvas, KeyEvent.VK_B);
+		this.renderFixtureAABBs = new ToggleStateKeyboardInputHandler(this.canvas, KeyEvent.VK_F);
+		this.renderFixtureRotationRadius = new ToggleStateKeyboardInputHandler(this.canvas, KeyEvent.VK_F);
 		
 		this.paused.install();
 		this.step.install();
@@ -443,12 +443,15 @@ public abstract class SimulationFrame extends JFrame {
 				g.setColor(Color.ORANGE);
 				g.fill(cp);
 				
-				// draw the contact normal
-				Line2D.Double vn = new Line2D.Double(
-						c.getPoint().x * this.camera.scale, c.getPoint().y * this.camera.scale, 
-						(c.getPoint().x - cc.getNormal().x * c.getDepth() * 100) * this.camera.scale, (c.getPoint().y - cc.getNormal().y * c.getDepth() * 100) * this.camera.scale);
-				g.setColor(Color.BLUE);
-				g.draw(vn);
+				// check for sensor/enabled
+				if (!cc.isSensor() && cc.isEnabled()) {
+					// draw the contact normal
+					Line2D.Double vn = new Line2D.Double(
+							c.getPoint().x * this.camera.scale, c.getPoint().y * this.camera.scale, 
+							(c.getPoint().x - cc.getNormal().x * c.getDepth() * 100) * this.camera.scale, (c.getPoint().y - cc.getNormal().y * c.getDepth() * 100) * this.camera.scale);
+					g.setColor(Color.BLUE);
+					g.draw(vn);
+				}
 			}
 		}
 	}
@@ -462,9 +465,6 @@ public abstract class SimulationFrame extends JFrame {
 	protected void render(Graphics2D g, double elapsedTime, SimulationBody body) {
 		// if the object is selected, draw it magenta
 		Color color = body.getColor();
-//		if (this.mouseHandle != null && this.mouseHandle.getBody1() == body) {
-//			color = Color.MAGENTA;
-//		}
 		if (this.picking.isEnabled() && this.picking.isActive() && this.picking.getBody() == body) {
 			color = Color.MAGENTA;
 		}
@@ -481,49 +481,7 @@ public abstract class SimulationFrame extends JFrame {
 	 * Used to handle any input events or custom code.
 	 */
 	protected void handleEvents() {
-//		Vector2 p = this.toWorldCoordinates(this.currentMousePoint);
-		
-//        if (this.mousePickingEnabled && p != null && dragStartMousePoint != null && !this.isPanning) {
-// 			if (this.mouseHandle == null) {
-// 				SimulationBody body = null;
-// 				
-// 				// detect bodies under the mouse pointer
-// 				AABB aabb = new AABB(new Vector2(p.x, p.y), 0.0001);
-// 				Iterator<DetectResult<SimulationBody, BodyFixture>> it = this.world.detectIterator(aabb, null);
-// 				while (it.hasNext()) {
-// 					SimulationBody b = it.next().getBody();
-// 					if (b.getMass().isInfinite()) {
-// 						continue;
-// 					}
-// 					if (b.contains(p)) {
-// 						body = b;
-// 						break;
-// 					}
-// 				}
-// 				
-// 				if (body != null) {
-// 					this.mouseHandle = new PinJoint<SimulationBody>(body, new Vector2(p.x, p.y), 8.0, 0.2, 1000);
-// 					this.world.addJoint(this.mouseHandle);
-// 				}
-// 			} else {
-// 				this.mouseHandle.setTarget(new Vector2(p.x, p.y));
-// 			}
-//        } else {
-//        	this.world.removeJoint(this.mouseHandle);
-// 			this.mouseHandle = null;
-//        }
-        
-//        if (this.mouseHandle == null && p != null && this.dragStartMousePoint != null && this.mousePanningEnabled) {
-//        	this.isPanning = true;
-//        	
-//        	double x = this.currentMousePoint.getX() - this.dragStartMousePoint.getX();
-//        	double y = this.currentMousePoint.getY() - this.dragStartMousePoint.getY();
-//        	
-//        	this.offsetX += x;
-//        	this.offsetY -= y;
-//        	
-//        	this.dragStartMousePoint = this.currentMousePoint;
-//        }
+
 	}
 	
 	/**
@@ -580,10 +538,18 @@ public abstract class SimulationFrame extends JFrame {
 		this.picking.setEnabled(flag);
 	}
 
+	/**
+	 * Returns true if mouse panning is enabled.
+	 * @return boolean
+	 */
 	public boolean isMousePanningEnabled() {
 		return this.panning.isEnabled();
 	}
 
+	/**
+	 * Sets mouse panning enabled.
+	 * @param flag true if mouse panning should be enabled
+	 */
 	public void setMousePanningEnabled(boolean flag) {
 		this.panning.setEnabled(flag);
 	}
@@ -652,38 +618,74 @@ public abstract class SimulationFrame extends JFrame {
 		this.renderBodyRotationRadius.setActive(flag);
 	}
 
+	/**
+	 * Returns true if contact drawing is enabled.
+	 * @return boolean
+	 */
 	public boolean isContactDrawingEnabled() {
 		return this.renderContacts.isActive();
 	}
 
+	/**
+	 * Sets if contact drawing is enabled.
+	 * @param flag true if contact drawing should be enabled
+	 */
 	public void setContactDrawingEnabled(boolean flag) {
 		this.renderContacts.setActive(flag);
 	}
 
+	/**
+	 * Returns the current scale (x pixels / meter)
+	 * @return double
+	 */
 	public double getScale() {
 		return this.camera.scale;
 	}
 
+	/**
+	 * Sets the scale (zoom).
+	 * @param scale the number of pixels per meter
+	 */
 	public void setScale(double scale) {
 		this.camera.scale = scale;
 	}
 
+	/**
+	 * Returns the x offset (pan-x).
+	 * @return double
+	 */
 	public double getOffsetX() {
 		return this.camera.offsetX;
 	}
 
+	/**
+	 * Sets the x offset (pan-x).
+	 * @param offsetX the x offset in pixels
+	 */
 	public void setOffsetX(double offsetX) {
 		this.camera.offsetX = offsetX;
 	}
 
+	/**
+	 * Returns the y offset (pan-y).
+	 * @return double
+	 */
 	public double getOffsetY() {
 		return this.camera.offsetY;
 	}
 
+	/**
+	 * Sets the y offset (pan-y).
+	 * @param offsetY the y offset in pixels
+	 */
 	public void setOffsetY(double offsetY) {
 		this.camera.offsetY = offsetY;
 	}
 	
+	/**
+	 * Generates Java code for the current state of the world.
+	 * @return String
+	 */
 	public String toCode() {
 		return CodeExporter.export(this.getName(), this.world);
 	}

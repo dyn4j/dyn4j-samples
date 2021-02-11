@@ -9,6 +9,7 @@ A collection of samples that use the dyn4j library in a variety of ways
 | [Bucket](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Bucket.java) | A side view of a bucket with 200 random objects | Larger world |
 | [Concave](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Concave.java) | A side view of a concave object | Concave vs. Convex, Convex Composition |
 | [Crank](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Crank.java) | A side view of a piston | RevoluteJoint, PrismaticJoint |
+| [Decomposition](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Decomposition.java) | A side view of a few simple polygons decomposed | Convex Decomposition |
 | [Destructible](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Destructible.java) | A side view of destruction of a body and joint | Remove/Add Buffering |
 | [LinkTerrain](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/LinkTerrain.java) | A side view of a link-based floor | Smooth Sliding, Link |
 | [Maze](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Maze.java) | A top down view of a maze with a player controled body | MotorJoint, Player Control |

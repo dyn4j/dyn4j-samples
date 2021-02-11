@@ -33,21 +33,34 @@ public abstract class AbstractKeyboardInputHandler extends AbstractInputHandler 
 				}
 			}
 		}
+		
+		@Override
+		public void keyReleased(KeyEvent e) {
+			if (e.isConsumed()) return;
+			
+			if (e.getKeyCode() == key) {
+				if (isEnabled() && !isDependentBehaviorActive()) {
+					onKeyReleased();
+				}
+			}
+		}
 	}
 	
 	@Override
 	public void install() {
-//		this.addKeyListener(listener);
 		this.component.addKeyListener(this.keyAdapter);
 	}
 	
 	@Override
 	public void uninstall() {
-//		this.removeKeyListener(this.keyAdapter);
 		this.component.removeKeyListener(this.keyAdapter);
 	}
 	
 	protected void onKeyPressed() {
+		
+	}
+	
+	protected void onKeyReleased() {
 		
 	}
 }

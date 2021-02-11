@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2016 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2021 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -53,7 +53,7 @@ import org.dyn4j.world.listener.StepListenerAdapter;
  * Always keep in mind that this is just an example, production
  * code should be more robust and better organized.
  * @author William Bittle
- * @since 3.2.5
+ * @since 4.1.1
  * @version 3.2.0
  */
 public class Platformer extends SimulationFrame {
@@ -64,7 +64,7 @@ public class Platformer extends SimulationFrame {
 	 * Default constructor for the window
 	 */
 	public Platformer() {
-		super("Simple Platformer", 32.0);
+		super("Platformer", 32.0);
 		
 		KeyListener listener = new CustomKeyListener();
 		this.addKeyListener(listener);

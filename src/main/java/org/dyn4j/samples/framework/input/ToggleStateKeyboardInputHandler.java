@@ -2,11 +2,11 @@ package org.dyn4j.samples.framework.input;
 
 import java.awt.Component;
 
-public class BooleanStateKeyboardInputHandler extends AbstractKeyboardInputHandler {
+public class ToggleStateKeyboardInputHandler extends AbstractKeyboardInputHandler {
 
 	private boolean active;
 	
-	public BooleanStateKeyboardInputHandler(Component component, int key) {
+	public ToggleStateKeyboardInputHandler(Component component, int key) {
 		super(component, key);
 		this.active = false;
 	}
@@ -14,13 +14,11 @@ public class BooleanStateKeyboardInputHandler extends AbstractKeyboardInputHandl
 	@Override
 	protected void onKeyPressed() {
 		super.onKeyPressed();
-		this.active = true;
+		this.active = !this.active;
 	}
 	
-	@Override
-	protected void onKeyReleased() {
-		super.onKeyReleased();
-		this.active = false;
+	public void setActive(boolean flag) {
+		this.active = flag;
 	}
 	
 	@Override

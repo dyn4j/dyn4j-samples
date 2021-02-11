@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2016 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2021 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -40,8 +40,8 @@ import org.dyn4j.samples.framework.SimulationFrame;
  * <p>
  * The pins can interact with anything in the ALL and BALL groups, but not with themselves.
  * @author William Bittle
+ * @version 4.1.1
  * @since 3.2.1
- * @version 3.2.0
  */
 public class Bowling extends SimulationFrame {
 	/** The serial version id */
