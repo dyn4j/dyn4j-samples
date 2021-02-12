@@ -59,23 +59,14 @@ public class Truck extends SimulationFrame {
 		
 	    // Ground
 		SimulationBody ground = new SimulationBody();
-	    {// Fixture1
-	      Convex c = Geometry.createRectangle(50.0, 1.0);
-	      BodyFixture bf = new BodyFixture(c);
-	      bf.setFriction(0.5);
-	      ground.addFixture(bf);
-	    }
+		ground.addFixture(Geometry.createRectangle(50.0, 1.0), 1.0, 0.5, 0.0);
 	    ground.translate(new Vector2(-2.0, -4.0));
 	    ground.setMass(MassType.INFINITE);
 	    world.addBody(ground);
 
 	    // Ramp
 	    SimulationBody ramp = new SimulationBody();
-	    {// Fixture1
-	      Convex c = Geometry.createRectangle(10.0, 0.2);
-	      BodyFixture bf = new BodyFixture(c);
-	      ramp.addFixture(bf);
-	    }
+	    ramp.addFixture(Geometry.createRectangle(10.0, 0.2));
 	    ramp.rotate(Math.toRadians(10.0));
 	    ramp.translate(new Vector2(0.0, -3.0));
 	    ramp.setMass(MassType.INFINITE);
@@ -84,21 +75,19 @@ public class Truck extends SimulationFrame {
 	    // Frame
 	    SimulationBody truck = new SimulationBody();
 	    {// drive shaft
-	      Convex c = Geometry.createRectangle(5.0, 0.25);
-	      BodyFixture bf = new BodyFixture(c);
-	      truck.addFixture(bf);
+	    	truck.addFixture(Geometry.createRectangle(5.0, 0.25));
 	    }
 	    {// body
-	      Convex c = Geometry.createRectangle(5.2, 0.5);
-	      c.translate(new Vector2(0.0, 0.5));
-	      BodyFixture bf = new BodyFixture(c);
-	      truck.addFixture(bf);
+	    	Convex c = Geometry.createRectangle(5.2, 0.5);
+	      	c.translate(new Vector2(0.0, 0.5));
+	      	BodyFixture bf = new BodyFixture(c);
+	      	truck.addFixture(bf);
 	    }
 	    {// tailgate
-	      Convex c = Geometry.createRectangle(0.25, 0.5);
-	      c.translate(new Vector2(-2.4, 1.0));
-	      BodyFixture bf = new BodyFixture(c);
-	      truck.addFixture(bf);
+	    	Convex c = Geometry.createRectangle(0.25, 0.5);
+	    	c.translate(new Vector2(-2.4, 1.0));
+	    	BodyFixture bf = new BodyFixture(c);
+	    	truck.addFixture(bf);
 	    }
 	    {// cab
 	    	Convex c = Geometry.createRectangle(2.0, 2.0);
@@ -112,25 +101,15 @@ public class Truck extends SimulationFrame {
 
 	    // Rear Wheel
 	    SimulationBody rearWheel = new SimulationBody();
-	    {// Fixture1
-	      Convex c = Geometry.createCircle(0.5);
-	      BodyFixture bf = new BodyFixture(c);
-	      bf.setFriction(0.5);
-	      rearWheel.addFixture(bf);
-	    }
-	    rearWheel.translate(new Vector2(-25.0, -3.0));
+	    rearWheel.addFixture(Geometry.createCircle(0.5), 1.0, 0.5, 0.0);
+	    rearWheel.translate(-25.0, -3.0);
 	    rearWheel.setMass(MassType.NORMAL);
 	    world.addBody(rearWheel);
 
 	    // Front Wheel
 	    SimulationBody frontWheel = new SimulationBody();
-	    {// Fixture1
-	      Convex c = Geometry.createCircle(0.5);
-	      BodyFixture bf = new BodyFixture(c);
-	      bf.setFriction(0.5);
-	      frontWheel.addFixture(bf);
-	    }
-	    frontWheel.translate(new Vector2(-21.0, -3.0));
+	    frontWheel.addFixture(Geometry.createCircle(0.5), 1.0, 0.5, 0.0);
+	    frontWheel.translate(-21.0, -3.0);
 	    frontWheel.setMass(MassType.NORMAL);
 	    world.addBody(frontWheel);
 

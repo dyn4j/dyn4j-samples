@@ -24,10 +24,8 @@
  */
 package org.dyn4j.samples;
 
-import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.dynamics.joint.PrismaticJoint;
 import org.dyn4j.dynamics.joint.RevoluteJoint;
-import org.dyn4j.geometry.Convex;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Vector2;
@@ -57,91 +55,49 @@ public class Crank extends SimulationFrame {
 	 * @see org.dyn4j.samples.framework.SimulationFrame#initializeWorld()
 	 */
 	protected void initializeWorld() {
-		// Floor
-		SimulationBody body1 = new SimulationBody();
-		body1.addFixture(Geometry.createRectangle(10.0, 0.5));
-	    body1.setMass(MassType.INFINITE);
-	    world.addBody(body1);
+		SimulationBody ground = new SimulationBody();
+		ground.addFixture(Geometry.createRectangle(10.0, 0.5));
+	    ground.setMass(MassType.INFINITE);
+	    world.addBody(ground);
 
-	    // Crank
-	    SimulationBody body2 = new SimulationBody();
-	    {// Fixture1
-	      Convex c = Geometry.createRectangle(0.5, 2.0);
-	      BodyFixture bf = new BodyFixture(c);
-	      bf.setDensity(2.0);
-	      body2.addFixture(bf);
-	    }
-	    body2.translate(new Vector2(0.0, 5.0));
-	    body2.setMass(MassType.NORMAL);
-	    world.addBody(body2);
-
-	    // Follower
-	    SimulationBody body3 = new SimulationBody();
-	    {// Fixture2
-	      Convex c = Geometry.createRectangle(0.5, 4.0);
-	      BodyFixture bf = new BodyFixture(c);
-	      bf.setDensity(2.0);
-	      body3.addFixture(bf);
-	    }
-	    body3.translate(new Vector2(0.0, 7.5));
-	    body3.setMass(MassType.NORMAL);
-	    world.addBody(body3);
-
-	    // Piston
-	    SimulationBody body4 = new SimulationBody();
-	    {// Fixture3
-	      Convex c = Geometry.createRectangle(1.5, 1.5);
-	      BodyFixture bf = new BodyFixture(c);
-	      bf.setDensity(2.0);
-	      body4.addFixture(bf);
-	    }
-	    body4.translate(new Vector2(0.0, 9.75));
-	    body4.setMass(MassType.FIXED_ANGULAR_VELOCITY);
-	    world.addBody(body4);
-
-	    // CrankJoint
-	    RevoluteJoint<SimulationBody> joint1 = new RevoluteJoint<SimulationBody>(body1, body2, new Vector2(0.0, 4.25));
-	    joint1.setLimitEnabled(false);
-	    joint1.setLimits(Math.toRadians(0.0), Math.toRadians(0.0));
-	    joint1.setReferenceAngle(Math.toRadians(0.0));
-	    joint1.setMotorEnabled(true);
-	    joint1.setMotorSpeed(Math.toRadians(180.0));
-	    joint1.setMaximumMotorTorque(10000.0);
-	    joint1.setCollisionAllowed(false);
-	    world.addJoint(joint1);
+	    // piston+crank
 	    
-	    // FollowerJoint
-	    RevoluteJoint<SimulationBody> joint2 = new RevoluteJoint<SimulationBody>(body2, body3, new Vector2(0.0, 5.75));
-	    joint2.setLimitEnabled(false);
-	    joint2.setLimits(Math.toRadians(0.0), Math.toRadians(0.0));
-	    joint2.setReferenceAngle(Math.toRadians(0.0));
-	    joint2.setMotorEnabled(false);
-	    joint2.setMotorSpeed(Math.toRadians(0.0));
-	    joint2.setMaximumMotorTorque(0.0);
-	    joint2.setCollisionAllowed(false);
-	    world.addJoint(joint2);
+	    SimulationBody crank = new SimulationBody();
+	    crank.addFixture(Geometry.createRectangle(0.5, 2.0), 2.0, 0.0, 0.0);
+	    crank.translate(new Vector2(0.0, 5.0));
+	    crank.setMass(MassType.NORMAL);
+	    world.addBody(crank);
+
+	    SimulationBody rod = new SimulationBody();
+	    rod.addFixture(Geometry.createRectangle(0.5, 4.0), 2.0, 0.0, 0.0);
+	    rod.translate(new Vector2(0.0, 7.5));
+	    rod.setMass(MassType.NORMAL);
+	    world.addBody(rod);
+
+	    SimulationBody piston = new SimulationBody();
+	    piston.addFixture(Geometry.createRectangle(1.5, 1.5), 2.0, 0.0, 0.0);
+	    piston.translate(new Vector2(0.0, 9.75));
+	    piston.setMass(MassType.FIXED_ANGULAR_VELOCITY);
+	    world.addBody(piston);
+
+	    // provides the motion
+	    RevoluteJoint<SimulationBody> crankShaftJoint = new RevoluteJoint<SimulationBody>(ground, crank, new Vector2(0.0, 4.25));
+	    crankShaftJoint.setMotorEnabled(true);
+	    crankShaftJoint.setMotorSpeed(Math.toRadians(180.0));
+	    crankShaftJoint.setMaximumMotorTorque(10000.0);
+	    world.addJoint(crankShaftJoint);
 	    
-	    // PistonJoint1
-	    RevoluteJoint<SimulationBody> joint3 = new RevoluteJoint<SimulationBody>(body3, body4, new Vector2(0.0, 9.25));
-	    joint3.setLimitEnabled(false);
-	    joint3.setLimits(Math.toRadians(0.0), Math.toRadians(0.0));
-	    joint3.setReferenceAngle(Math.toRadians(0.0));
-	    joint3.setMotorEnabled(false);
-	    joint3.setMotorSpeed(Math.toRadians(0.0));
-	    joint3.setMaximumMotorTorque(0.0);
-	    joint3.setCollisionAllowed(false);
-	    world.addJoint(joint3);
+	    // links the crank to the rod
+	    RevoluteJoint<SimulationBody> crankToRodJoint = new RevoluteJoint<SimulationBody>(crank, rod, new Vector2(0.0, 5.75));
+	    world.addJoint(crankToRodJoint);
 	    
-	    // PistonJoint2
-	    PrismaticJoint<SimulationBody> joint4 = new PrismaticJoint<SimulationBody>(body1, body4, new Vector2(0.0, 9.75), new Vector2(0.0, 1.0));
-	    joint4.setLimitEnabled(false);
-	    joint4.setLimits(0.0, 0.0);
-	    joint4.setReferenceAngle(Math.toRadians(0.0));
-	    joint4.setMotorEnabled(false);
-	    joint4.setMotorSpeed(0.0);
-	    joint4.setMaximumMotorForce(0.0);
-	    joint4.setCollisionAllowed(false);
-	    world.addJoint(joint4);
+	    // links the rod to the piston
+	    RevoluteJoint<SimulationBody> rodToPistonJoint = new RevoluteJoint<SimulationBody>(rod, piston, new Vector2(0.0, 9.25));
+	    world.addJoint(rodToPistonJoint);
+	    
+	    // keeps the piston moving along the y-axis
+	    PrismaticJoint<SimulationBody> pistonPathJoint = new PrismaticJoint<SimulationBody>(ground, piston, new Vector2(0.0, 9.75), new Vector2(0.0, 1.0));
+	    world.addJoint(pistonPathJoint);
 	}
 	
 	/**

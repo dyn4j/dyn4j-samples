@@ -33,9 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.dynamics.joint.DistanceJoint;
-import org.dyn4j.geometry.Convex;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.Mass;
 import org.dyn4j.geometry.MassType;
@@ -106,55 +104,35 @@ public class Organize extends SimulationFrame {
 	 * Creates game objects and adds them to the world.
 	 */
 	protected void initializeWorld() {
-		SimulationBody ground1 = new SimulationBody();
-	    {// Fixture1
-	      Convex c = Geometry.createRectangle(15.0, 1.0);
-	      BodyFixture bf = new BodyFixture(c);
-	      ground1.addFixture(bf);
-	    }
-	    ground1.translate(new Vector2(0, -5));
-	    ground1.setMass(MassType.INFINITE);
-	    world.addBody(ground1);
+		SimulationBody bottom = new SimulationBody();
+		bottom.addFixture(Geometry.createRectangle(15.0, 1.0));
+	    bottom.translate(new Vector2(0, -5));
+	    bottom.setMass(MassType.INFINITE);
+	    world.addBody(bottom);
 	    
-		SimulationBody ground2 = new SimulationBody();
-	    {// Fixture1
-	      Convex c = Geometry.createRectangle(15.0, 1.0);
-	      BodyFixture bf = new BodyFixture(c);
-	      ground2.addFixture(bf);
-	    }
-	    ground2.translate(new Vector2(0, 5));
-	    ground2.setMass(MassType.INFINITE);
-	    world.addBody(ground2);
+		SimulationBody top = new SimulationBody();
+		top.addFixture(Geometry.createRectangle(15.0, 1.0));
+	    top.translate(new Vector2(0, 5));
+	    top.setMass(MassType.INFINITE);
+	    world.addBody(top);
 	    
-		SimulationBody ground3 = new SimulationBody();
-	    {// Fixture1
-	      Convex c = Geometry.createRectangle(1.0, 15.0);
-	      BodyFixture bf = new BodyFixture(c);
-	      ground3.addFixture(bf);
-	    }
-	    ground3.translate(new Vector2(-5, 0));
-	    ground3.setMass(MassType.INFINITE);
-	    world.addBody(ground3);
+		SimulationBody left = new SimulationBody();
+		left.addFixture(Geometry.createRectangle(1.0, 15.0));
+	    left.translate(new Vector2(-5, 0));
+	    left.setMass(MassType.INFINITE);
+	    world.addBody(left);
 	    
-		SimulationBody ground4 = new SimulationBody();
-	    {// Fixture1
-	      Convex c = Geometry.createRectangle(1.0, 15.0);
-	      BodyFixture bf = new BodyFixture(c);
-	      ground4.addFixture(bf);
-	    }
-	    ground4.translate(new Vector2(5, 0));
-	    ground4.setMass(MassType.INFINITE);
-	    world.addBody(ground4);
+		SimulationBody right = new SimulationBody();
+		right.addFixture(Geometry.createRectangle(1.0, 15.0));
+	    right.translate(new Vector2(5, 0));
+	    right.setMass(MassType.INFINITE);
+	    world.addBody(right);
 
 	    Random r = new Random(123);
 	    bodies = new ArrayList<SimulationBody>();
 	    for (int i = 0; i < 20; i++) {
 			SimulationBody body = new SimulationBody();
-		    {// Fixture1
-		      Convex c = Geometry.createCircle(r.nextDouble());
-		      BodyFixture bf = new BodyFixture(c);
-		      body.addFixture(bf);
-		    }
+			body.addFixture(Geometry.createCircle(r.nextDouble()));
 		    body.translate(r.nextDouble(),0);
 		    body.setMass(new Mass(new Vector2(), 1, 10));
 		    world.addBody(body);

@@ -26,7 +26,6 @@ package org.dyn4j.samples;
 
 import java.util.Random;
 
-import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Convex;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
@@ -56,36 +55,24 @@ public class Bucket extends SimulationFrame {
 	 */
 	protected void initializeWorld() {
 	    // Bottom
-		SimulationBody body1 = new SimulationBody();
-	    {// Fixture1
-	      Convex c = Geometry.createRectangle(15.0, 1.0);
-	      BodyFixture bf = new BodyFixture(c);
-	      body1.addFixture(bf);
-	    }
-	    body1.setMass(MassType.INFINITE);
-	    world.addBody(body1);
+		SimulationBody bucketBottom = new SimulationBody();
+		bucketBottom.addFixture(Geometry.createRectangle(15.0, 1.0));
+	    bucketBottom.setMass(MassType.INFINITE);
+	    world.addBody(bucketBottom);
 
 	    // Left-Side
-	    SimulationBody body2 = new SimulationBody();
-	    {// Fixture1
-	      Convex c = Geometry.createRectangle(1.0, 15.0);
-	      BodyFixture bf = new BodyFixture(c);
-	      body2.addFixture(bf);
-	    }
-	    body2.translate(new Vector2(-7.5, 7.0));
-	    body2.setMass(MassType.INFINITE);
-	    world.addBody(body2);
+	    SimulationBody bucketLeft = new SimulationBody();
+	    bucketLeft.addFixture(Geometry.createRectangle(1.0, 15.0));
+	    bucketLeft.translate(new Vector2(-7.5, 7.0));
+	    bucketLeft.setMass(MassType.INFINITE);
+	    world.addBody(bucketLeft);
 
 	    // Right-Side
-	    SimulationBody body3 = new SimulationBody();
-	    {// Fixture1
-	      Convex c = Geometry.createRectangle(1.0, 15.0);
-	      BodyFixture bf = new BodyFixture(c);
-	      body3.addFixture(bf);
-	    }
-	    body3.translate(new Vector2(7.5, 7.0));
-	    body3.setMass(MassType.INFINITE);
-	    world.addBody(body3);
+	    SimulationBody bucketRight = new SimulationBody();
+	    bucketRight.addFixture(Geometry.createRectangle(1.0, 15.0));
+	    bucketRight.translate(new Vector2(7.5, 7.0));
+	    bucketRight.setMass(MassType.INFINITE);
+	    world.addBody(bucketRight);
 
 	    Random r = new Random(23);
 	    double xmin = -7.0;

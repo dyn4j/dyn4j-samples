@@ -32,10 +32,11 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.dyn4j.dynamics.TimeStep;
-import org.dyn4j.dynamics.contact.Contact;
 import org.dyn4j.dynamics.contact.ContactConstraint;
+import org.dyn4j.geometry.AABB;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
+import org.dyn4j.geometry.Vector2;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
 import org.dyn4j.world.ContactCollisionData;
@@ -73,13 +74,20 @@ public class Platformer extends SimulationFrame {
 	
 	private SimulationBody wheel;
 	
-	private final AtomicBoolean leftPressed = new AtomicBoolean(false);
-	private final AtomicBoolean rightPressed = new AtomicBoolean(false);
+	// controls
+	private final AtomicBoolean goLeftPressed = new AtomicBoolean(false);
+	private final AtomicBoolean goRightPressed = new AtomicBoolean(false);
+	private final AtomicBoolean goDownPressed = new AtomicBoolean(false);
+	private final AtomicBoolean jumpPressed = new AtomicBoolean(false);
+	
 	private final AtomicBoolean isOnGround = new AtomicBoolean(false);
 	
 	private static final Color WHEEL_OFF_COLOR = Color.MAGENTA;
 	private static final Color WHEEL_ON_COLOR = Color.GREEN;
-	private static final Object FLOOR_BODY = new Object();
+	
+	private static final Object CHARACTER = new Object();
+	private static final Object FLOOR = new Object();
+	private static final Object ONE_WAY_PLATFORM = new Object();
 	
 	/**
 	 * Custom key adapter to listen for key events.
@@ -92,10 +100,10 @@ public class Platformer extends SimulationFrame {
 		public void keyPressed(KeyEvent e) {
 			switch (e.getKeyCode()) {
 				case KeyEvent.VK_LEFT:
-					leftPressed.set(true);
+					goLeftPressed.set(true);
 					break;
 				case KeyEvent.VK_RIGHT:
-					rightPressed.set(true);
+					goRightPressed.set(true);
 					break;
 			}
 			
@@ -105,10 +113,18 @@ public class Platformer extends SimulationFrame {
 		public void keyReleased(KeyEvent e) {
 			switch (e.getKeyCode()) {
 				case KeyEvent.VK_LEFT:
-					leftPressed.set(false);
+					goLeftPressed.set(false);
 					break;
 				case KeyEvent.VK_RIGHT:
-					rightPressed.set(false);
+					goRightPressed.set(false);
+					break;
+				case KeyEvent.VK_UP:
+					jumpPressed.set(true);
+					break;
+				case KeyEvent.VK_DOWN:
+					if (isOnGround.get()) {
+						goDownPressed.set(true);
+					}
 					break;
 			}
 		}
@@ -123,7 +139,7 @@ public class Platformer extends SimulationFrame {
 		floor.addFixture(Geometry.createRectangle(50.0, 0.2));
 		floor.setMass(MassType.INFINITE);
 		floor.translate(0, -3);
-		floor.setUserData(FLOOR_BODY);
+		floor.setUserData(FLOOR);
 		this.world.addBody(floor);
 		
 		// some obstacles
@@ -135,9 +151,17 @@ public class Platformer extends SimulationFrame {
 			sb.addFixture(Geometry.createIsoscelesTriangle(w, h));
 			sb.translate((Math.random() > 0.5 ? -1 : 1) * Math.random() * 5.0, h * 0.5 - 2.9);
 			sb.setMass(MassType.INFINITE);
-			sb.setUserData(FLOOR_BODY);
+			sb.setUserData(FLOOR);
 			this.world.addBody(sb);
 		}
+		
+		// the platform
+		SimulationBody platform = new SimulationBody();
+		platform.addFixture(Geometry.createRectangle(10.0, 0.2));
+		platform.setMass(MassType.INFINITE);
+		platform.translate(0, 0);
+		platform.setUserData(ONE_WAY_PLATFORM);
+		this.world.addBody(platform);
 		
 		// some bounding shapes
 		SimulationBody right = new SimulationBody();
@@ -157,57 +181,140 @@ public class Platformer extends SimulationFrame {
 		// NOTE: lots of friction to simulate a sticky tire
 		wheel.addFixture(Geometry.createCircle(0.5), 1.0, 20.0, 0.1);
 		wheel.setMass(MassType.NORMAL);
+		wheel.translate(0.0, -2.0);
+		wheel.setUserData(CHARACTER);
+		wheel.setAtRestDetectionEnabled(false);
 		this.world.addBody(wheel);
 		
+		// Use a number of concepts here to support movement, jumping, and one-way
+		// platforms - this is by no means THE solution to these problems, but just
+		// and example to provide some ideas on how you might
+		
+		// One consideration might be to use a sensor body to get less accurate
+		// on-ground detection so that it's not frustrating to the user.  dyn4j
+		// will detect them in collision, but small bouncing or other things could
+		// cause it to look/feel wrong
+		
+		// SETP 1: 
+		// at the beginning of each world step, check if the body is in
+		// contact with any of the floor bodies
 		this.world.addStepListener(new StepListenerAdapter<SimulationBody>() {
 			@Override
 			public void begin(TimeStep step, PhysicsWorld<SimulationBody, ?> world) {
 				super.begin(step, world);
-				// at the beginning of each world step, check if the body is in
-				// contact with any of the floor bodies
+				
 				boolean isGround = false;
-				List<SimulationBody> bodies =  world.getInContactBodies(wheel, false);
-				for (int i = 0; i < bodies.size(); i++) {
-					if (bodies.get(i).getUserData() == FLOOR_BODY) {
+				List<ContactConstraint<SimulationBody>> contacts = world.getContacts(wheel);
+				for (ContactConstraint<SimulationBody> cc : contacts) {
+					if (is(cc.getOtherBody(wheel), FLOOR, ONE_WAY_PLATFORM) && cc.isEnabled()) {
 						isGround = true;
-						break;
 					}
 				}
-				
 				if (!isGround) {
-					// if not, then set the flag, and update the color
 					isOnGround.set(false);					
 				}
 			}
 		});
 		
-		// then, when a contact is created between two bodies, check if the bodies
-		// are floor and wheel, if so, then set the color and flag
+		// STEP 2:
+		// when contacts are processed, we need to check if we're colliding with either
+		// the one-way platform or the ground
 		this.world.addContactListener(new ContactListenerAdapter<SimulationBody>() {
-			private boolean isContactWithFloor(ContactConstraint<SimulationBody> contactConstraint) {
-				if ((contactConstraint.getBody1() == wheel || contactConstraint.getBody2() == wheel) &&
-					(contactConstraint.getBody1().getUserData() == FLOOR_BODY || contactConstraint.getBody2().getUserData() == FLOOR_BODY)) {
-					return true;
-				}
-				return false;
-			}
-			
 			@Override
-			public void persist(ContactCollisionData<SimulationBody> collision, Contact oldContact, Contact newContact) {
-				if (isContactWithFloor(collision.getContactConstraint())) {
-					isOnGround.set(true);
-				}
-				super.persist(collision, oldContact, newContact);
-			}
-			
-			@Override
-			public void begin(ContactCollisionData<SimulationBody> collision, Contact contact) {
-				if (isContactWithFloor(collision.getContactConstraint())) {
-					isOnGround.set(true);
-				}
-				super.begin(collision, contact);
+			public void collision(ContactCollisionData<SimulationBody> collision) {
+				ContactConstraint<SimulationBody> cc = collision.getContactConstraint();
+				
+				// set the other body to one-way if necessary
+				setOneWay(cc);
+				
+				// track on the on-ground status
+				setOnGround(cc);
+				
+				super.collision(collision);
 			}
 		});
+	}
+	
+	/**
+	 * Helper method to determine if a body is one of the given types assuming
+	 * the type is stored in the user data.
+	 * @param body the body
+	 * @param types the set of types
+	 * @return boolean
+	 */
+	private boolean is(SimulationBody body, Object... types) {
+		for (Object type : types) {
+			if (body.getUserData() == type) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Returns true if the given platform should be toggled as one-way
+	 * given the position of the character body.
+	 * @param character the character body
+	 * @param platform the platform body
+	 * @return boolean
+	 */
+	private boolean isOneWay(SimulationBody character, SimulationBody platform) {
+		AABB wAABB = character.createAABB();
+		AABB pAABB = platform.createAABB();
+		
+		// NOTE: this would need to change based on the shape of the platform and it's orientation
+		// 
+		// one thought might be to store the allowed normal of the platform on the platform body
+		// and check that against the ContactConstraint normal to see if they are pointing in the
+		// same direction
+		//
+		// another option might be to project both onto the platform normal to see where they are overlapping
+		if (wAABB.getMinY() < pAABB.getMinY() || goDownPressed.get()) {
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Disables the constraint if it's between the character and platform and it
+	 * the scenario meets the condition for one-way.
+	 * @param contactConstraint the constraint
+	 */
+	private void setOneWay(ContactConstraint<SimulationBody> contactConstraint) {
+		SimulationBody b1 = contactConstraint.getBody1();
+		SimulationBody b2 = contactConstraint.getBody2();
+		
+		if (is(b1, CHARACTER) && is(b2, ONE_WAY_PLATFORM)) {
+			if (isOneWay(b1, b2)) {
+				contactConstraint.setEnabled(false);
+			}
+		} else if (is(b1, ONE_WAY_PLATFORM) && is(b2, CHARACTER)) {
+			if (isOneWay(b2, b1)) {
+				contactConstraint.setEnabled(false);
+			}
+		}
+	}
+	
+	/**
+	 * Sets the isOnGround flag if the given contact constraint is between
+	 * the character body and a floor or one-way platform.
+	 * @param contactConstraint
+	 */
+	private void setOnGround(ContactConstraint<SimulationBody> contactConstraint) {
+		SimulationBody b1 = contactConstraint.getBody1();
+		SimulationBody b2 = contactConstraint.getBody2();
+		
+		if (is(b1, CHARACTER) && 
+			is(b2, FLOOR, ONE_WAY_PLATFORM) &&
+			contactConstraint.isEnabled()) {
+			isOnGround.set(true);
+			goDownPressed.set(false);
+		} else if (is(b1, FLOOR, ONE_WAY_PLATFORM) && 
+				   is(b2, CHARACTER) &&
+				contactConstraint.isEnabled()) {
+			isOnGround.set(true);
+			goDownPressed.set(false);
+		}
 	}
 	
 	/* (non-Javadoc)
@@ -218,12 +325,22 @@ public class Platformer extends SimulationFrame {
 		super.handleEvents();
 		
 		// apply a torque based on key input
-		if (this.leftPressed.get()) {
+		if (this.goLeftPressed.get()) {
 			wheel.applyTorque(Math.PI / 2);
 		}
-		if (this.rightPressed.get()) {
+		if (this.goRightPressed.get()) {
 			wheel.applyTorque(-Math.PI / 2);
 		}
+		
+		// only allow jumping if the body is on the ground
+		if (this.jumpPressed.get()) {
+			if (this.isOnGround.get()) {
+				wheel.applyImpulse(new Vector2(0.0, 7));
+			}
+			this.jumpPressed.set(false);
+		}
+		
+		// color the body green if it's on the ground
 		if (this.isOnGround.get()) {
 			wheel.setColor(WHEEL_ON_COLOR);
 		} else {

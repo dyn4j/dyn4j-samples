@@ -24,7 +24,6 @@
  */
 package org.dyn4j.samples;
 
-import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Convex;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
@@ -56,49 +55,38 @@ public class Concave extends SimulationFrame {
 	 */
 	protected void initializeWorld() {
 		// Ground
-		SimulationBody body1 = new SimulationBody();
-	    {// Fixture1
-	      Convex c = Geometry.createRectangle(15.0, 1.0);
-	      BodyFixture bf = new BodyFixture(c);
-	      body1.addFixture(bf);
-	    }
-	    body1.setMass(MassType.INFINITE);
-	    world.addBody(body1);
+		SimulationBody ground = new SimulationBody();
+		ground.addFixture(Geometry.createRectangle(15.0, 1.0));
+	    ground.setMass(MassType.INFINITE);
+	    world.addBody(ground);
 
 	    // Concave
-	    SimulationBody body2 = new SimulationBody();
-	    {// Fixture1
+	    SimulationBody table = new SimulationBody();
+	    {
 	      Convex c = Geometry.createRectangle(3.0, 1.0);
 	      c.translate(new Vector2(0.0, 0.5));
-	      BodyFixture bf = new BodyFixture(c);
-	      body2.addFixture(bf);
+	      table.addFixture(c);
 	    }
-	    {// Fixture2
+	    {
 	      Convex c = Geometry.createRectangle(1.0, 1.0);
 	      c.translate(new Vector2(-1.0, -0.5));
-	      BodyFixture bf = new BodyFixture(c);
-	      body2.addFixture(bf);
+	      table.addFixture(c);
 	    }
-	    {// Fixture3
+	    {
 	      Convex c = Geometry.createRectangle(1.0, 1.0);
 	      c.translate(new Vector2(1.0, -0.5));
-	      BodyFixture bf = new BodyFixture(c);
-	      body2.addFixture(bf);
+	      table.addFixture(c);
 	    }
-	    body2.translate(new Vector2(0.0, 4.0));
-	    body2.setMass(MassType.NORMAL);
-	    world.addBody(body2);
+	    table.translate(new Vector2(0.0, 4.0));
+	    table.setMass(MassType.NORMAL);
+	    world.addBody(table);
 
 	    // Body3
-	    SimulationBody body3 = new SimulationBody();
-	    {// Fixture1
-	      Convex c = Geometry.createRectangle(0.5, 0.5);
-	      BodyFixture bf = new BodyFixture(c);
-	      body3.addFixture(bf);
-	    }
-	    body3.translate(new Vector2(0.0, 1.0));
-	    body3.setMass(MassType.NORMAL);
-	    world.addBody(body3);
+	    SimulationBody box = new SimulationBody();
+	    box.addFixture(Geometry.createSquare(0.5));
+	    box.translate(new Vector2(0.0, 1.0));
+	    box.setMass(MassType.NORMAL);
+	    world.addBody(box);
 	}
 	
 	/**

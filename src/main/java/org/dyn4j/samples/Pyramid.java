@@ -24,8 +24,6 @@
  */
 package org.dyn4j.samples;
 
-import org.dyn4j.dynamics.BodyFixture;
-import org.dyn4j.geometry.Convex;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Vector2;
@@ -55,15 +53,10 @@ public class Pyramid extends SimulationFrame {
 	 * @see org.dyn4j.samples.framework.SimulationFrame#initializeWorld()
 	 */
 	protected void initializeWorld() {
-	    // Bottom
-		SimulationBody body1 = new SimulationBody();
-	    {// Fixture1
-	      Convex c = Geometry.createRectangle(15.0, 1.0);
-	      BodyFixture bf = new BodyFixture(c);
-	      body1.addFixture(bf);
-	    }
-	    body1.setMass(MassType.INFINITE);
-	    world.addBody(body1);
+		SimulationBody ground = new SimulationBody();
+		ground.addFixture(Geometry.createRectangle(15.0, 1.0));
+	    ground.setMass(MassType.INFINITE);
+	    world.addBody(ground);
 
 	    int ph = 15;
 	    double size = 0.5;

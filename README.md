@@ -11,13 +11,14 @@ A collection of samples that use the dyn4j library in a variety of ways
 | [Crank](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Crank.java) | A side view of a piston | RevoluteJoint, PrismaticJoint |
 | [Decomposition](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Decomposition.java) | A side view of a few simple polygons decomposed | Convex Decomposition |
 | [Destructible](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Destructible.java) | A side view of destruction of a body and joint | Remove/Add Buffering |
+| [Images](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Images.java) | A side view of a scene where images are mapped to bodies | Image Mapping/Texturing |
 | [LinkTerrain](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/LinkTerrain.java) | A side view of a link-based floor | Smooth Sliding, Link |
 | [Maze](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Maze.java) | A top down view of a maze with a player controled body | MotorJoint, Player Control |
+| [Organize](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Organize.java) | A side view of a scene where bodies are randomly joined and self organize | DistanceJoint |
+| [Platformer](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Platformer.java) | A side view of a platformer simulation | OnGround, Player Control, One-way Platform, Jumping |
 | [Pyramid](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Pyramid.java) | A side view of a Pyramid of stacked boxes | Stacking |
 | [Ragdoll](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Ragdoll.java) | A side view of a ragdoll made from joints | RevoluteJoint |
-| [Images](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Images.java) | A side view of a scene where images are mapped to bodies | Image Mapping/Texturing |
-| [Organize](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Organize.java) | A side view of a scene where bodies are randomly joined and self organize | DistanceJoint |
-| [Platformer](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Platformer.java) | A side view of a platformer simulation | OnGround, Player Control |
+| [Raycast](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Ragdoll.java) | A top down tank simulation | Raycasting, Player Control, FrictionJoint, RevoluteJoint |
 | [Stacking](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Stacking.java) | A side view of a scene where the player can add boxes dynamically | Stacking, Add Bodies |
 | [Thrust](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Thrust.java) | A side view of a scene with a rocket | Applying Forces |
 | [Tracking](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Tracking.java) | A scene where contact tracking is printed to the console | Contact Tracking |

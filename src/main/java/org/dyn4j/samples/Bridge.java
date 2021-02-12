@@ -56,11 +56,7 @@ public class Bridge extends SimulationFrame {
 	protected void initializeWorld() {		
 		// Ground
 		SimulationBody ground = new SimulationBody();
-	    {// Fixture1
-	      Convex c = Geometry.createRectangle(50.0, 1.0);
-	      BodyFixture bf = new BodyFixture(c);
-	      ground.addFixture(bf);
-	    }
+		ground.addFixture(Geometry.createRectangle(50.0, 1.0));
 	    ground.translate(new Vector2(0.6875, -8.75));
 	    ground.setMass(MassType.INFINITE);
 	    world.addBody(ground);
@@ -84,12 +80,14 @@ public class Bridge extends SimulationFrame {
 		    section.setMass(MassType.NORMAL);
 		    world.addBody(section);
 		    
+		    // connect the previous body with this body
 		    RevoluteJoint<SimulationBody> rj = new RevoluteJoint<SimulationBody>(prev, section, new Vector2(i - hn - hw, y));
 		    world.addJoint(rj);
 		    
 		    prev = section;
 	    }
 	    
+	    // connect the last body with the ground
 	    RevoluteJoint<SimulationBody> rj = new RevoluteJoint<SimulationBody>(prev, ground, new Vector2(hn + hw, y));
 	    world.addJoint(rj);
 	}

@@ -26,7 +26,6 @@ package org.dyn4j.samples;
 
 import java.util.List;
 
-import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Convex;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
@@ -66,17 +65,13 @@ public class Decomposition extends SimulationFrame {
 	protected void initializeWorld() {
 
 	    // Ground
-		SimulationBody body1 = new SimulationBody();
-	    {// Fixture1
-	      Convex c = Geometry.createRectangle(15.0, 1.0);
-	      BodyFixture bf = new BodyFixture(c);
-	      body1.addFixture(bf);
-	    }
-	    body1.setMass(MassType.INFINITE);
-	    world.addBody(body1);
+		SimulationBody ground = new SimulationBody();
+		ground.addFixture(Geometry.createRectangle(15.0, 1.0));
+	    ground.setMass(MassType.INFINITE);
+	    world.addBody(ground);
 
 	    // a (lowercase) "d" shape
-	    Vector2[] d = new Vector2[] {
+	    Vector2[] dVerticies = new Vector2[] {
 	    new Vector2(-0.703125, 0.859375), 
 		  new Vector2(-0.828125, 0.625), 
 		  new Vector2(-0.875, 0.25), 
@@ -92,18 +87,18 @@ public class Decomposition extends SimulationFrame {
 	    };
 	    
 	    Decomposer bayazit = new Bayazit();
-	    List<Convex> parts = bayazit.decompose(d);
-	    SimulationBody body2 = new SimulationBody();
+	    List<Convex> parts = bayazit.decompose(dVerticies);
+	    SimulationBody d = new SimulationBody();
 	    for (Convex c : parts) {
-	    	body2.addFixture(c);
+	    	d.addFixture(c);
 	    }
-	    body2.rotate(Math.toRadians(-0.17453292519943292));
-	    body2.translate(new Vector2(-1.950745294864571, 0.4726801090249715));
-	    body2.setMass(MassType.NORMAL);
-	    world.addBody(body2);
+	    d.rotate(Math.toRadians(-0.17453292519943292));
+	    d.translate(new Vector2(-1.950745294864571, 0.4726801090249715));
+	    d.setMass(MassType.NORMAL);
+	    world.addBody(d);
 
 	    // a (lowercase) "y" shape
-	    Vector2[] y = new Vector2[] {
+	    Vector2[] yVerticies = new Vector2[] {
 	    	new Vector2(0.53125, -1.390625),
 	    	new Vector2(1.1171875, -0.546875),
 	    	new Vector2(1.703125, 0.296875), 
@@ -116,18 +111,18 @@ public class Decomposition extends SimulationFrame {
 	    };
 	    
 	    Decomposer sweep = new SweepLine();
-	    parts = sweep.decompose(y);
-	    SimulationBody body3 = new SimulationBody();
+	    parts = sweep.decompose(yVerticies);
+	    SimulationBody y = new SimulationBody();
 	    for (Convex c : parts) {
-	    	body3.addFixture(c);
+	    	y.addFixture(c);
 	    }
-	    body3.getFixture(2).setSensor(true);
-	    body3.translate(new Vector2(-2.1822787101720906, 1.4407710711648776));
-	    body3.setMass(MassType.NORMAL);
-	    world.addBody(body3);
+	    y.getFixture(2).setSensor(true);
+	    y.translate(new Vector2(-2.1822787101720906, 1.4407710711648776));
+	    y.setMass(MassType.NORMAL);
+	    world.addBody(y);
 
 	    // a (lowercase) "n" shape
-	    Vector2[] n = new Vector2[] {
+	    Vector2[] nVerticies = new Vector2[] {
     		new Vector2(-0.03125, 0.984375),
     		new Vector2(-0.015625, -0.015625), 
     		new Vector2(0.140625, -0.015625), 
@@ -148,17 +143,17 @@ public class Decomposition extends SimulationFrame {
 	    };
 	    
 	    Decomposer ear = new EarClipping();
-	    parts = ear.decompose(n);
-	    SimulationBody body4 = new SimulationBody();
+	    parts = ear.decompose(nVerticies);
+	    SimulationBody n = new SimulationBody();
 	    for (Convex c : parts) {
-	    	body4.addFixture(c);
+	    	n.addFixture(c);
 	    }
-	    body4.translate(new Vector2(-0.5112465256848169, 0.6500452079566003));
-	    body4.setMass(MassType.NORMAL);
-	    world.addBody(body4);
+	    n.translate(new Vector2(-0.5112465256848169, 0.6500452079566003));
+	    n.setMass(MassType.NORMAL);
+	    world.addBody(n);
 
 	    // a "4" shape
-	    Vector2[] four = new Vector2[] {
+	    Vector2[] fourVerticies = new Vector2[] {
 	    	new Vector2(0.8125, 0.8125), 
     		new Vector2(0.828125, 0.046875), 
     		new Vector2(1.125, 0.046875), 
@@ -167,17 +162,17 @@ public class Decomposition extends SimulationFrame {
     		new Vector2(-0.21875, 0.8125)
 	    };
 	    
-	    parts = bayazit.decompose(four);
-	    SimulationBody body5 = new SimulationBody();
+	    parts = bayazit.decompose(fourVerticies);
+	    SimulationBody four = new SimulationBody();
 	    for (Convex c : parts) {
-	    	body5.addFixture(c);
+	    	four.addFixture(c);
 	    }
-	    body5.translate(new Vector2(0.26865946239058014, 0.9649433050584864));
-	    body5.setMass(MassType.NORMAL);
-	    world.addBody(body5);
+	    four.translate(new Vector2(0.26865946239058014, 0.9649433050584864));
+	    four.setMass(MassType.NORMAL);
+	    world.addBody(four);
 
 	    // a (lowercase) "j" shape
-	    Vector2[] j = new Vector2[] {
+	    Vector2[] jVerticies = new Vector2[] {
     		new Vector2(0.90625, 0.203125), 
     		new Vector2(0.96875, 0.34375), 
     		new Vector2(1.0, 1.21875), 
@@ -196,14 +191,14 @@ public class Decomposition extends SimulationFrame {
 		  
 	    };
 	    
-	    parts = bayazit.decompose(j);
-	    SimulationBody body6 = new SimulationBody();
+	    parts = bayazit.decompose(jVerticies);
+	    SimulationBody j = new SimulationBody();
 	    for (Convex c : parts) {
-	    	body6.addFixture(c);
+	    	j.addFixture(c);
 	    }
-	    body6.translate(new Vector2(0.8752422480620154, 0.4841370269037847));
-	    body6.setMass(MassType.NORMAL);
-	    world.addBody(body6);
+	    j.translate(new Vector2(0.8752422480620154, 0.4841370269037847));
+	    j.setMass(MassType.NORMAL);
+	    world.addBody(j);
 	}
 	
 	/**
