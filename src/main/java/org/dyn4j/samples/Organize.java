@@ -166,7 +166,7 @@ public class Organize extends SimulationFrame {
 					DistanceJoint<SimulationBody> dj = new DistanceJoint<SimulationBody>(b1, b2, b1.getWorldCenter(), b2.getWorldCenter());
 					dj.setCollisionAllowed(true);
 					dj.setDistance(0);
-					dj.setFrequency(1);
+					dj.setFrequency(2);
 					dj.setDampingRatio(1.0);
 					world.addJoint(dj);
 				}

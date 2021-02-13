@@ -121,7 +121,7 @@ public class Images extends SimulationFrame {
 	 * Default constructor.
 	 */
 	public Images() {
-		super("Rendering Images on Bodies", 45.0);
+		super("Images", 45.0);
 	}
 	
 	/**

@@ -110,7 +110,7 @@ public class Tracking extends SimulationFrame {
 	 * Default constructor.
 	 */
 	public Tracking() {
-		super("Tracking Contact IDs", 45.0);
+		super("Tracking", 45.0);
 	}
 	
 	/**

@@ -46,6 +46,8 @@ import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
+import org.dyn4j.collision.AxisAlignedBounds;
+import org.dyn4j.collision.Bounds;
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.dynamics.contact.ContactConstraint;
 import org.dyn4j.dynamics.contact.SolvedContact;
@@ -331,6 +333,20 @@ public abstract class SimulationFrame extends JFrame {
 	protected void render(Graphics2D g, double elapsedTime) {
 		g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		
+		// draw the bounds (if set)
+		Bounds bounds = this.world.getBounds();
+		if (bounds != null && bounds instanceof AxisAlignedBounds) {
+			AxisAlignedBounds aab = (AxisAlignedBounds)bounds;
+			AABB aabb = aab.getBounds();
+			Rectangle2D.Double ce = new Rectangle2D.Double(
+					aabb.getMinX() * this.camera.scale,
+					aabb.getMinY() * this.camera.scale,
+					aabb.getWidth() * this.camera.scale,
+					aabb.getHeight() * this.camera.scale);
+			g.setColor(new Color(128, 0, 128));
+			g.draw(ce);
+		}
 		
 		// draw all the objects in the world
 		for (int i = 0; i < this.world.getBodyCount(); i++) {

@@ -54,7 +54,7 @@ import org.dyn4j.world.result.RaycastResult;
  * @version 4.1.1
  * @since 3.0.0
  */
-public class Raycast extends SimulationFrame {
+public class Tank extends SimulationFrame {
 	/** The serial version id */
 	private static final long serialVersionUID = 1462952703366297615L;
 
@@ -129,7 +129,7 @@ public class Raycast extends SimulationFrame {
 	/**
 	 * Default constructor.
 	 */
-	public Raycast() {
+	public Tank() {
 		super("Raycast", 48.0);
 		
 		KeyListener listener = new CustomKeyListener();
@@ -320,7 +320,7 @@ public class Raycast extends SimulationFrame {
 	 * @param args command line arguments
 	 */
 	public static void main(String[] args) {
-		Raycast simulation = new Raycast();
+		Tank simulation = new Tank();
 		simulation.run();
 	}
 }

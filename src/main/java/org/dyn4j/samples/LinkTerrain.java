@@ -49,7 +49,7 @@ public class LinkTerrain extends SimulationFrame {
 	 * Default constructor for the window
 	 */
 	public LinkTerrain() {
-		super("Link Terrain", 64.0);
+		super("LinkTerrain", 64.0);
 		
 		this.pause();
 	}
