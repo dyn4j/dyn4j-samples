@@ -91,6 +91,9 @@ public abstract class SimulationFrame extends JFrame {
 	/** The time stamp for the last iteration */
 	private long last;
 	
+	/** Tracking for the step number when in manual stepping mode */
+	private long stepNumber;
+	
 	// camera
 	
 	private final Camera camera;
@@ -109,6 +112,9 @@ public abstract class SimulationFrame extends JFrame {
 	private final ToggleStateKeyboardInputHandler renderBodyRotationRadius;
 	private final ToggleStateKeyboardInputHandler renderFixtureAABBs;
 	private final ToggleStateKeyboardInputHandler renderFixtureRotationRadius;
+	
+	private final ToggleStateKeyboardInputHandler printStepNumber;
+	private final ToggleStateKeyboardInputHandler printSimulation; 
 	
 	/**
 	 * Constructor.
@@ -193,6 +199,12 @@ public abstract class SimulationFrame extends JFrame {
 		this.renderFixtureAABBs.install();
 		this.renderFixtureRotationRadius.install();
 
+		this.printSimulation = new ToggleStateKeyboardInputHandler(this.canvas, KeyEvent.VK_NUMPAD0);
+		this.printStepNumber = new ToggleStateKeyboardInputHandler(this.canvas, KeyEvent.VK_NUMPAD1);
+		
+		this.printSimulation.install();
+		this.printStepNumber.install();
+		
 		// setup the world
 		this.initializeWorld();
 	}
@@ -274,6 +286,7 @@ public abstract class SimulationFrame extends JFrame {
 	        this.world.update(elapsedTime);
 		} else if (this.step.isActive()) {
 			this.world.step(1);
+			this.stepNumber++;
 			this.step.setActive(false);
 		}
 		
@@ -497,7 +510,15 @@ public abstract class SimulationFrame extends JFrame {
 	 * Used to handle any input events or custom code.
 	 */
 	protected void handleEvents() {
-
+		if (this.printSimulation.isActive()) {
+			this.printSimulation.setActive(false);
+			System.out.println(this.toCode());
+		}
+		
+		if (this.printStepNumber.isActive()) {
+			this.printStepNumber.setActive(false);
+			System.out.println("Step #" + this.stepNumber);
+		}
 	}
 	
 	/**

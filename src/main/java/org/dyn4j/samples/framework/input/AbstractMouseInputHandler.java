@@ -81,7 +81,7 @@ public abstract class AbstractMouseInputHandler extends AbstractInputHandler imp
 		public void mouseWheelMoved(MouseWheelEvent e) {
 			if (e.isConsumed()) return;
 			
-			wheelRotation = e.getPreciseWheelRotation();
+			wheelRotation = e.getWheelRotation();
 			if (isEnabled() && !isDependentBehaviorActive()) {
 				onMouseWheel(wheelRotation);
 			}
