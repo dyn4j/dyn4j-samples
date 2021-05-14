@@ -41,7 +41,7 @@ import org.dyn4j.world.World;
  * Primarily used to illustrate the computation of the mass and size
  * of the balls.  See the {@link Billiards#initializeWorld()} method.
  * @author William Bittle
- * @version 4.1.1
+ * @version 4.2.0
  * @since 3.2.0
  */
 public final class Billiards extends SimulationFrame {
@@ -62,7 +62,6 @@ public final class Billiards extends SimulationFrame {
 	protected void initializeWorld() {
 		// no gravity on a top-down view of a billiards game
 		this.world.setGravity(World.ZERO_GRAVITY);
-		this.world.getSettings().setRestitutionVelocity(0.0);
 		
 		// create all your bodies/joints
 		
@@ -98,31 +97,36 @@ public final class Billiards extends SimulationFrame {
 		world.addBody(bottom);
 		
 		SimulationBody wallRight = new SimulationBody(new Color(150, 75, 0));
-		wallRight.addFixture(Geometry.createRectangle(edgeDepth, tableHeight), 1.0, 0.4, 0.3);
+		BodyFixture fixture = wallRight.addFixture(Geometry.createRectangle(edgeDepth, tableHeight), 1.0, 0.4, 0.3);
+		fixture.setRestitutionVelocity(0.0);
 		wallRight.translate(halfTableWidth - halfEdgeDepth, 0);
 		wallRight.setMass(MassType.INFINITE);
 		world.addBody(wallRight);
 		
 		SimulationBody wallLeft = new SimulationBody(new Color(150, 75, 0));
-		wallLeft.addFixture(Geometry.createRectangle(edgeDepth, tableHeight), 1.0, 0.4, 0.3);
+		fixture = wallLeft.addFixture(Geometry.createRectangle(edgeDepth, tableHeight), 1.0, 0.4, 0.3);
+		fixture.setRestitutionVelocity(0.0);
 		wallLeft.translate(-halfTableWidth + halfEdgeDepth, 0);
 		wallLeft.setMass(MassType.INFINITE);
 		world.addBody(wallLeft);
 
 		SimulationBody wallTop = new SimulationBody(new Color(150, 75, 0));
-		wallTop.addFixture(Geometry.createRectangle(tableWidth, edgeDepth), 1.0, 0.4, 0.3);
+		fixture = wallTop.addFixture(Geometry.createRectangle(tableWidth, edgeDepth), 1.0, 0.4, 0.3);
+		fixture.setRestitutionVelocity(0.0);
 		wallTop.translate(0, halfTableHeight - halfEdgeDepth);
 		wallTop.setMass(MassType.INFINITE);
 		world.addBody(wallTop);
 		
 		SimulationBody wallBottom = new SimulationBody(new Color(150, 75, 0));
-		wallBottom.addFixture(Geometry.createRectangle(tableWidth, edgeDepth), 1.0, 0.4, 0.3);
+		fixture = wallBottom.addFixture(Geometry.createRectangle(tableWidth, edgeDepth), 1.0, 0.4, 0.3);
+		fixture.setRestitutionVelocity(0.0);
 		wallBottom.translate(0, -halfTableHeight + halfEdgeDepth);
 		wallBottom.setMass(MassType.INFINITE);
 		world.addBody(wallBottom);
 		
 		SimulationBody cueBall = new SimulationBody(new Color(255, 255, 255));
-		cueBall.addFixture(Geometry.createCircle(ballRadius), ballDensity, ballFriction, ballRestitution);
+		fixture = cueBall.addFixture(Geometry.createCircle(ballRadius), ballDensity, ballFriction, ballRestitution);
+		fixture.setRestitutionVelocity(0.0);
 		cueBall.translate(-0.25, 0.0);
 		cueBall.setLinearVelocity(2.0, 0.0);
 		cueBall.setLinearDamping(0.3);
@@ -168,7 +172,8 @@ public final class Billiards extends SimulationFrame {
 				double y = sy + csy - (ballRadius * 2.0 * j);
 				
 				SimulationBody ball = new SimulationBody(colors[n]);
-				ball.addFixture(Geometry.createCircle(ballRadius), ballDensity, ballFriction, ballRestitution);
+				fixture = ball.addFixture(Geometry.createCircle(ballRadius), ballDensity, ballFriction, ballRestitution);
+				fixture.setRestitutionVelocity(0.0);
 				ball.translate(x, y);
 				ball.setLinearDamping(0.4);
 				ball.setAngularDamping(0.8);

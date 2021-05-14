@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2020 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2021 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -46,7 +46,7 @@ import org.dyn4j.samples.framework.SimulationFrame;
  * distance = 0 DistanceJoints that causes the bodies to try to self
  * organize.
  * @author William Bittle
- * @version 4.1.1
+ * @version 4.2.0
  * @since 4.1.1
  */
 public class Organize extends SimulationFrame {
@@ -165,7 +165,7 @@ public class Organize extends SimulationFrame {
 
 					DistanceJoint<SimulationBody> dj = new DistanceJoint<SimulationBody>(b1, b2, b1.getWorldCenter(), b2.getWorldCenter());
 					dj.setCollisionAllowed(true);
-					dj.setDistance(0);
+					dj.setRestDistance(0.0);
 					dj.setFrequency(2);
 					dj.setDampingRatio(1.0);
 					world.addJoint(dj);

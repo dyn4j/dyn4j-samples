@@ -65,7 +65,6 @@ import org.dyn4j.dynamics.joint.PinJoint;
 import org.dyn4j.dynamics.joint.PrismaticJoint;
 import org.dyn4j.dynamics.joint.PulleyJoint;
 import org.dyn4j.dynamics.joint.RevoluteJoint;
-import org.dyn4j.dynamics.joint.RopeJoint;
 import org.dyn4j.dynamics.joint.WeldJoint;
 import org.dyn4j.dynamics.joint.WheelJoint;
 import org.dyn4j.geometry.Capsule;
@@ -87,7 +86,7 @@ import org.dyn4j.world.World;
 /**
  * A simple example of how you might serialize the state of a world.
  * @author William Bittle
- * @version 4.1.1
+ * @version 4.2.0
  * @since 4.1.1
  */
 public class CodeExporter {
@@ -265,6 +264,9 @@ public class CodeExporter {
 				if (bf.getRestitution() != BodyFixture.DEFAULT_RESTITUTION) {
 					sb.append(TAB3).append("bf.setRestitution(").append(bf.getRestitution()).append(");").append(NEW_LINE);
 				}
+				if (bf.getRestitutionVelocity() != BodyFixture.DEFAULT_RESTITUTION_VELOCITY) {
+					sb.append(TAB3).append("bf.setRestitutionVelocity(").append(bf.getRestitutionVelocity()).append(");").append(NEW_LINE);
+				}
 				// set the filter properties
 				sb.append(export(bf.getFilter(), TAB3))
 				// add the fixture to the body
@@ -347,7 +349,7 @@ public class CodeExporter {
 				sb.append(TAB2).append("DistanceJoint joint").append(i).append(" = new DistanceJoint(").append(idNameMap.get(body1)).append(", ").append(idNameMap.get(body2)).append(", ").append(export(dj.getAnchor1())).append(", ").append(export(dj.getAnchor2())).append(");").append(NEW_LINE)
 				.append(TAB2).append("joint").append(i).append(".setFrequency(").append(dj.getFrequency()).append(");").append(NEW_LINE)
 				.append(TAB2).append("joint").append(i).append(".setDampingRatio(").append(dj.getDampingRatio()).append(");").append(NEW_LINE)
-				.append(TAB2).append("joint").append(i).append(".setDistance(").append(dj.getDistance()).append(");").append(NEW_LINE);
+				.append(TAB2).append("joint").append(i).append(".setDistance(").append(dj.getRestDistance()).append(");").append(NEW_LINE);
 			} else if (joint instanceof FrictionJoint) {
 				FrictionJoint<?> fj = (FrictionJoint<?>)joint;
 				sb.append(TAB2).append("FrictionJoint joint").append(i).append(" = new FrictionJoint(").append(idNameMap.get(body1)).append(", ").append(idNameMap.get(body2)).append(", ").append(export(fj.getAnchor1())).append(");").append(NEW_LINE)
@@ -379,12 +381,6 @@ public class CodeExporter {
 				.append(TAB2).append("joint").append(i).append(".setMotorEnabled(").append(rj.isMotorEnabled()).append(");").append(NEW_LINE)
 				.append(TAB2).append("joint").append(i).append(".setMotorSpeed(Math.toRadians(").append(Math.toDegrees(rj.getMotorSpeed())).append("));").append(NEW_LINE)
 				.append(TAB2).append("joint").append(i).append(".setMaximumMotorTorque(").append(rj.getMaximumMotorTorque()).append(");").append(NEW_LINE);
-			} else if (joint instanceof RopeJoint) {
-				RopeJoint<?> rj = (RopeJoint<?>)joint;
-				sb.append(TAB2).append("RopeJoint joint").append(i).append(" = new RopeJoint(").append(idNameMap.get(body1)).append(", ").append(idNameMap.get(body2)).append(", ").append(export(rj.getAnchor1())).append(", ").append(export(rj.getAnchor2())).append(");").append(NEW_LINE)
-				.append(TAB2).append("joint").append(i).append(".setLimits(").append(rj.getLowerLimit()).append(", ").append(rj.getUpperLimit()).append(");").append(NEW_LINE)
-				.append(TAB2).append("joint").append(i).append(".setLowerLimitEnabled(").append(rj.isLowerLimitEnabled()).append(");").append(NEW_LINE)
-				.append(TAB2).append("joint").append(i).append(".setUpperLimitEnabled(").append(rj.isUpperLimitEnabled()).append(");").append(NEW_LINE);
 			} else if (joint instanceof WeldJoint) {
 				WeldJoint<?> wj = (WeldJoint<?>)joint;
 				sb.append(TAB2).append("WeldJoint joint").append(i).append(" = new WeldJoint(").append(idNameMap.get(body1)).append(", ").append(idNameMap.get(body2)).append(", ").append(export(wj.getAnchor1())).append(");").append(NEW_LINE)
@@ -461,9 +457,6 @@ public class CodeExporter {
 		}
 		if (settings.getMaximumWarmStartDistance() != Settings.DEFAULT_MAXIMUM_WARM_START_DISTANCE) {
 			sb.append(TAB2).append("settings.setMaximumWarmStartDistance(").append(settings.getMaximumWarmStartDistance()).append(");").append(NEW_LINE);
-		}
-		if (settings.getRestitutionVelocity() != Settings.DEFAULT_RESTITUTION_VELOCITY) {
-			sb.append(TAB2).append("settings.setRestitutionVelocity(").append(settings.getRestitutionVelocity()).append(");").append(NEW_LINE);
 		}
 		if (settings.getLinearTolerance() != Settings.DEFAULT_LINEAR_TOLERANCE) {
 			sb.append(TAB2).append("settings.setLinearTolerance(").append(settings.getLinearTolerance()).append(");").append(NEW_LINE);

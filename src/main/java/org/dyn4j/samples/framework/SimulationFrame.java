@@ -67,7 +67,7 @@ import org.dyn4j.world.WorldCollisionData;
 
 /**
  * A simple framework for building samples.
- * @version 4.1.1
+ * @version 4.2.0
  * @since 3.2.0
  */
 public abstract class SimulationFrame extends JFrame {
@@ -431,7 +431,7 @@ public abstract class SimulationFrame extends JFrame {
 						dj.getAnchor1().y * this.camera.scale, 
 						dj.getAnchor2().x * this.camera.scale, 
 						dj.getAnchor2().y * this.camera.scale);
-				double target = dj.getDistance();
+				double target = dj.getRestDistance();
 				double val = Math.abs(target - dj.getAnchor1().distance(dj.getAnchor2())) * 100;
 				int red = (int)Math.floor(Math.min(val, 255));
 				g.setColor(new Color(red, 0, 0));

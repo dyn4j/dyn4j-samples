@@ -56,7 +56,7 @@ import org.dyn4j.world.listener.BoundsListenerAdapter;
 /**
  * A scene where the user can play basket ball by configuring the trajectory.
  * @author William Bittle
- * @version 4.1.1
+ * @version 4.2.0
  * @since 4.1.1
  */
 public class BasketBall extends SimulationFrame {
@@ -299,7 +299,7 @@ public class BasketBall extends SimulationFrame {
 			// string
 			
 			DistanceJoint<SimulationBody> dj = new DistanceJoint<SimulationBody>(ropeL, ropeR, new Vector2(8.8, y - 0.2), new Vector2(10.2, y - 0.2));
-			dj.setDistance(dj.getDistance() - 0.2);
+			dj.setRestDistance(dj.getRestDistance() - 0.2);
 			dj.setDampingRatio(0.8);
 			dj.setFrequency(8.0);
 			this.world.addJoint(dj);
