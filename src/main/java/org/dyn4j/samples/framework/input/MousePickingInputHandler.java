@@ -20,7 +20,7 @@ public class MousePickingInputHandler extends AbstractMouseInputHandler implemen
 	private final World<SimulationBody> world;
 	
 	/** A joint for mouse picking */
-	private PinJoint<SimulationBody> mouseHandle;
+	private Joint<SimulationBody> mouseHandle;
 	
 	public MousePickingInputHandler(Component component, Camera camera, World<SimulationBody> world) {
 		super(component, camera, MouseEvent.BUTTON1);
@@ -90,12 +90,23 @@ public class MousePickingInputHandler extends AbstractMouseInputHandler implemen
 			}
 			
 			if (body != null) {
-				this.mouseHandle = new PinJoint<SimulationBody>(body, new Vector2(p.x, p.y), 8.0, 0.2, 1000);
-				this.world.addJoint(this.mouseHandle);
+				PinJoint<SimulationBody> pj = new PinJoint<SimulationBody>(body, new Vector2(p.x, p.y));
+				pj.setSpringEnabled(true);
+				pj.setSpringFrequency(8.0);
+				pj.setSpringDamperEnabled(true);
+				pj.setSpringDampingRatio(0.2);
+				pj.setMaximumSpringForceEnabled(true);
+				pj.setMaximumSpringForce(500);
+				
+				this.world.addJoint(pj);
+				this.mouseHandle = pj;
+				
 				return true;
 			}
 		} else {
-			this.mouseHandle.setTarget(new Vector2(p.x, p.y));
+			if (this.mouseHandle instanceof PinJoint) {
+				((PinJoint<?>)this.mouseHandle).setTarget(new Vector2(p.x, p.y));
+			}
 			return true;
 		}
 		
@@ -110,7 +121,7 @@ public class MousePickingInputHandler extends AbstractMouseInputHandler implemen
 	
 	public SimulationBody getBody() {
 		if (this.mouseHandle != null) {
-			return this.mouseHandle.getBody1();
+			return this.mouseHandle.getBody(0);
 		}
 		return null;
 	}

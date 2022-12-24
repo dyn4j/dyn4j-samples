@@ -439,11 +439,14 @@ public abstract class SimulationFrame extends JFrame {
 			} else if (j instanceof PinJoint) {
 				PinJoint<SimulationBody> pj = (PinJoint<SimulationBody>)j;
 				Line2D.Double vn = new Line2D.Double(
-						pj.getAnchor1().x * this.camera.scale, 
-						pj.getAnchor1().y * this.camera.scale, 
-						pj.getAnchor2().x * this.camera.scale, 
-						pj.getAnchor2().y * this.camera.scale);
-				double max = pj.getMaximumForce();
+						pj.getTarget().x * this.camera.scale, 
+						pj.getTarget().y * this.camera.scale, 
+						pj.getAnchor().x * this.camera.scale, 
+						pj.getAnchor().y * this.camera.scale);
+				double max = pj.getMaximumSpringForce();
+				if (!pj.isSpringEnabled() ) {
+					max = pj.getMaximumCorrectionForce();
+				}
 				double val = pj.getReactionForce(this.world.getTimeStep().getInverseDeltaTime()).getMagnitude();
 				int red = (int)Math.floor((val / max) * 255);
 				g.setColor(new Color(red, 0, 0));

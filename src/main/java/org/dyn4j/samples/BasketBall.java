@@ -300,8 +300,10 @@ public class BasketBall extends SimulationFrame {
 			
 			DistanceJoint<SimulationBody> dj = new DistanceJoint<SimulationBody>(ropeL, ropeR, new Vector2(8.8, y - 0.2), new Vector2(10.2, y - 0.2));
 			dj.setRestDistance(dj.getRestDistance() - 0.2);
-			dj.setDampingRatio(0.8);
-			dj.setFrequency(8.0);
+			dj.setSpringEnabled(true);
+			dj.setSpringDamperEnabled(true);
+			dj.setSpringDampingRatio(0.8);
+			dj.setSpringFrequency(8.0);
 			this.world.addJoint(dj);
 			
 			prevL = ropeL;

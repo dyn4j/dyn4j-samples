@@ -80,7 +80,6 @@ import org.dyn4j.geometry.Segment;
 import org.dyn4j.geometry.Slice;
 import org.dyn4j.geometry.Triangle;
 import org.dyn4j.geometry.Vector2;
-import org.dyn4j.resources.Messages;
 import org.dyn4j.world.World;
 
 /**
@@ -160,7 +159,7 @@ public class CodeExporter {
 		if (ap instanceof CollisionItemAABBProducer) {
 			sb.append(TAB2).append("AABBProducer<CollisionItem<Body, BodyFixture>> aabbProducer = new CollisionItemAABBProducer<Body, BodyFixture>();").append(NEW_LINE);
 		} else {
-			throw new UnsupportedOperationException(MessageFormat.format(Messages.getString("exception.persist.unknownClass"), ap.getClass().getName())); 
+			throw new UnsupportedOperationException("The class " + ap.getClass().getName() + " is not known.");
 		}
 		
 		if (em instanceof StaticValueAABBExpansionMethod) {
@@ -169,13 +168,13 @@ public class CodeExporter {
 		} else if (em instanceof NullAABBExpansionMethod) {
 			sb.append(TAB2).append("AABBExpansionMethod<CollisionItem<Body, BodyFixture>> aabbExpansionMethod = new NullAABBExpansionMethod<CollisionItem<Body, BodyFixture>>();").append(NEW_LINE);
 		} else {
-			throw new UnsupportedOperationException(MessageFormat.format(Messages.getString("exception.persist.unknownClass"), ap.getClass().getName())); 
+			throw new UnsupportedOperationException("The class " + em.getClass().getName() + " is not known."); 
 		}
 		
 		if (bpf instanceof CollisionItemBroadphaseFilter) {
 			sb.append(TAB2).append("BroadphaseFilter<CollisionItem<Body, BodyFixture>> broadphaseFilter = new CollisionItemBroadphaseFilter<Body, BodyFixture>();").append(NEW_LINE);
 		} else {
-			throw new UnsupportedOperationException(MessageFormat.format(Messages.getString("exception.persist.unknownClass"), ap.getClass().getName())); 
+			throw new UnsupportedOperationException("The class " + bpf.getClass().getName() + " is not known."); 
 		}
 		
 		if (bp instanceof Sap) {
@@ -183,7 +182,7 @@ public class CodeExporter {
 		} else if (bp instanceof DynamicAABBTree) {
 			sb.append(TAB2).append("BroadphaseDetector<CollisionItem<Body, BodyFixture>> bp = new DynamicAABBTree<CollisionItem<Body, BodyFixture>>(broadphaseFilter, aabbProducer, aabbExpansionMethod);").append(NEW_LINE);
 		} else {
-			throw new UnsupportedOperationException(MessageFormat.format(Messages.getString("exception.persist.unknownClass"), bpd.getClass().getName()));
+			throw new UnsupportedOperationException("The class " + bp.getClass().getName() + " is not known.");
 		}
 		
 		sb.append(TAB2).append("CollisionItemBroadphaseDetector<Body, BodyFixture> bpd = new CollisionItemBroadphaseDetectorAdapter<Body, BodyFixture>(bp);").append(NEW_LINE);
@@ -195,7 +194,7 @@ public class CodeExporter {
 		} else if (npd instanceof Gjk) {
 			// don't output anything since its the default
 		} else {
-			throw new UnsupportedOperationException(MessageFormat.format(Messages.getString("exception.persist.unknownClass"), npd.getClass().getName()));
+			throw new UnsupportedOperationException("The class " + npd.getClass().getName() + " is not known.");
 		}
 		
 		// don't output anything since its the default
@@ -203,7 +202,7 @@ public class CodeExporter {
 		if (msr instanceof ClippingManifoldSolver) {
 			sb.append(TAB2).append("world.setManifoldSolver(new ClippingManifoldSolver());").append(NEW_LINE);
 		} else {
-			throw new UnsupportedOperationException(MessageFormat.format(Messages.getString("exception.persist.unknownClass"), msr.getClass().getName()));
+			throw new UnsupportedOperationException("The class " + msr.getClass().getName() + " is not known.");
 		}
 		
 		// don't output anything since its the default
@@ -211,7 +210,7 @@ public class CodeExporter {
 		if (tid instanceof ConservativeAdvancement) {
 			sb.append(TAB2).append("world.setTimeOfImpactDetector(new ConservativeAdvancement());").append(NEW_LINE);
 		} else {
-			throw new UnsupportedOperationException(MessageFormat.format(Messages.getString("exception.persist.unknownClass"), tid.getClass().getName()));
+			throw new UnsupportedOperationException("The class " + tid.getClass().getName() + " is not known.");
 		}
 		
 		Bounds bounds = world.getBounds();
@@ -229,7 +228,7 @@ public class CodeExporter {
 			sb.append(TAB2).append("world.setBounds(bounds);").append(NEW_LINE)
 			.append(NEW_LINE);
 		} else {
-			throw new UnsupportedOperationException(MessageFormat.format(Messages.getString("exception.persist.unknownClass"), bounds.getClass().getName()));
+			throw new UnsupportedOperationException("The class " + bounds.getClass().getName() + " is not known.");
 		}
 		
 		// output bodies
@@ -333,36 +332,46 @@ public class CodeExporter {
 		for (int i = 1; i < jSize + 1; i++) {
 			Joint<?> joint = world.getJoint(i - 1);
 			
-			Body body1 = (Body)joint.getBody1();
-			Body body2 = (Body)joint.getBody2();
-			
 			sb.append(TAB2).append("// ").append(joint.getUserData()).append(NEW_LINE);
 			if (joint instanceof AngleJoint) {
 				AngleJoint<?> aj = (AngleJoint<?>)joint;
+				Body body1 = (Body)aj.getBody1();
+				Body body2 = (Body)aj.getBody2();
 				sb.append(TAB2).append("AngleJoint joint").append(i).append(" = new AngleJoint(").append(idNameMap.get(body1)).append(", ").append(idNameMap.get(body2)).append(");").append(NEW_LINE)
 				.append(TAB2).append("joint").append(i).append(".setLimits(Math.toRadians(").append(Math.toDegrees(aj.getLowerLimit())).append("), Math.toRadians(").append(Math.toDegrees(aj.getUpperLimit())).append("));").append(NEW_LINE)
-				.append(TAB2).append("joint").append(i).append(".setLimitEnabled(").append(aj.isLimitEnabled()).append(");").append(NEW_LINE)
-				.append(TAB2).append("joint").append(i).append(".setReferenceAngle(Math.toRadians(").append(Math.toDegrees(aj.getReferenceAngle())).append("));").append(NEW_LINE)
+				.append(TAB2).append("joint").append(i).append(".setLimitEnabled(").append(aj.isLimitsEnabled()).append(");").append(NEW_LINE)
+				.append(TAB2).append("joint").append(i).append(".setLimitsReferenceAngle(Math.toRadians(").append(Math.toDegrees(aj.getLimitsReferenceAngle())).append("));").append(NEW_LINE)
 				.append(TAB2).append("joint").append(i).append(".setRatio(").append(aj.getRatio()).append(");").append(NEW_LINE);
 			} else if (joint instanceof DistanceJoint) {
 				DistanceJoint<?> dj = (DistanceJoint<?>)joint;
+				Body body1 = (Body)dj.getBody1();
+				Body body2 = (Body)dj.getBody2();
 				sb.append(TAB2).append("DistanceJoint joint").append(i).append(" = new DistanceJoint(").append(idNameMap.get(body1)).append(", ").append(idNameMap.get(body2)).append(", ").append(export(dj.getAnchor1())).append(", ").append(export(dj.getAnchor2())).append(");").append(NEW_LINE)
-				.append(TAB2).append("joint").append(i).append(".setFrequency(").append(dj.getFrequency()).append(");").append(NEW_LINE)
-				.append(TAB2).append("joint").append(i).append(".setDampingRatio(").append(dj.getDampingRatio()).append(");").append(NEW_LINE)
-				.append(TAB2).append("joint").append(i).append(".setDistance(").append(dj.getRestDistance()).append(");").append(NEW_LINE);
+				.append(TAB2).append("joint").append(i).append(".setSpringFrequency(").append(dj.getSpringFrequency()).append(");").append(NEW_LINE)
+				.append(TAB2).append("joint").append(i).append(".setSpringDampingRatio(").append(dj.getSpringDampingRatio()).append(");").append(NEW_LINE)
+				.append(TAB2).append("joint").append(i).append(".setRestDistance(").append(dj.getRestDistance()).append(");").append(NEW_LINE);
 			} else if (joint instanceof FrictionJoint) {
 				FrictionJoint<?> fj = (FrictionJoint<?>)joint;
+				Body body1 = (Body)fj.getBody1();
+				Body body2 = (Body)fj.getBody2();
 				sb.append(TAB2).append("FrictionJoint joint").append(i).append(" = new FrictionJoint(").append(idNameMap.get(body1)).append(", ").append(idNameMap.get(body2)).append(", ").append(export(fj.getAnchor1())).append(");").append(NEW_LINE)
 				.append(TAB2).append("joint").append(i).append(".setMaximumForce(").append(fj.getMaximumForce()).append(");").append(NEW_LINE)
 				.append(TAB2).append("joint").append(i).append(".setMaximumTorque(").append(fj.getMaximumTorque()).append(");").append(NEW_LINE);
 			} else if (joint instanceof PinJoint) {
 				PinJoint<?> mj = (PinJoint<?>)joint;
-				sb.append(TAB2).append("PinJoint joint").append(i).append(" = new PinJoint(").append(idNameMap.get(body1)).append(", ").append(export(mj.getAnchor2())).append(", ").append(mj.getFrequency()).append(", ").append(mj.getDampingRatio()).append(", ").append(mj.getMaximumForce()).append(");").append(NEW_LINE)
-				.append(TAB2).append("joint").append(i).append(".setTarget(").append(export(mj.getAnchor1())).append(");").append(NEW_LINE);
+				Body body1 = (Body)mj.getBody();
+				sb.append(TAB2).append("PinJoint joint").append(i).append(" = new PinJoint(").append(idNameMap.get(body1)).append(", ").append(export(mj.getAnchor())).append(");").append(NEW_LINE)
+				.append(TAB2).append("joint").append(i).append(".setSpringFrequency(").append(mj.getSpringFrequency()).append(");").append(NEW_LINE)
+				.append(TAB2).append("joint").append(i).append(".setSpringDampingRatio(").append(mj.getSpringDampingRatio()).append(");").append(NEW_LINE)
+				.append(TAB2).append("joint").append(i).append(".setMaximumSpringForce(").append(mj.getMaximumSpringForce()).append(");").append(NEW_LINE)
+				.append(TAB2).append("joint").append(i).append(".setTarget(").append(export(mj.getAnchor())).append(");").append(NEW_LINE);
 			} else if (joint instanceof PrismaticJoint) {
 				PrismaticJoint<?> pj = (PrismaticJoint<?>)joint;
+				Body body1 = (Body)pj.getBody1();
+				Body body2 = (Body)pj.getBody2();
 				sb.append(TAB2).append("PrismaticJoint joint").append(i).append(" = new PrismaticJoint(").append(idNameMap.get(body1)).append(", ").append(idNameMap.get(body2)).append(", ").append(export(pj.getAnchor1())).append(", ").append(export(pj.getAxis())).append(");").append(NEW_LINE)
-				.append(TAB2).append("joint").append(i).append(".setLimitEnabled(").append(pj.isLimitEnabled()).append(");").append(NEW_LINE)
+				.append(TAB2).append("joint").append(i).append(".setLowerLimitEnabled(").append(pj.isLowerLimitEnabled()).append(");").append(NEW_LINE)
+				.append(TAB2).append("joint").append(i).append(".setUpperLimitEnabled(").append(pj.isUpperLimitEnabled()).append(");").append(NEW_LINE)
 				.append(TAB2).append("joint").append(i).append(".setLimits(").append(pj.getLowerLimit()).append(", ").append(pj.getUpperLimit()).append(");").append(NEW_LINE)
 				.append(TAB2).append("joint").append(i).append(".setReferenceAngle(Math.toRadians(").append(Math.toDegrees(pj.getReferenceAngle())).append("));").append(NEW_LINE)
 				.append(TAB2).append("joint").append(i).append(".setMotorEnabled(").append(pj.isMotorEnabled()).append(");").append(NEW_LINE)
@@ -370,33 +379,43 @@ public class CodeExporter {
 				.append(TAB2).append("joint").append(i).append(".setMaximumMotorForce(").append(pj.getMaximumMotorForce()).append(");").append(NEW_LINE);
 			} else if (joint instanceof PulleyJoint) {
 				PulleyJoint<?> pj = (PulleyJoint<?>)joint;
+				Body body1 = (Body)pj.getBody1();
+				Body body2 = (Body)pj.getBody2();
 				sb.append(TAB2).append("PulleyJoint joint").append(i).append(" = new PulleyJoint(").append(idNameMap.get(body1)).append(", ").append(idNameMap.get(body2)).append(", ").append(export(pj.getPulleyAnchor1())).append(", ").append(export(pj.getPulleyAnchor2())).append(", ").append(export(pj.getAnchor1())).append(", ").append(export(pj.getAnchor2())).append(");").append(NEW_LINE)
 				.append(TAB2).append("joint").append(i).append(".setRatio(").append(pj.getRatio()).append(");").append(NEW_LINE);
 			} else if (joint instanceof RevoluteJoint) {
 				RevoluteJoint<?> rj = (RevoluteJoint<?>)joint;
+				Body body1 = (Body)rj.getBody1();
+				Body body2 = (Body)rj.getBody2();
 				sb.append(TAB2).append("RevoluteJoint joint").append(i).append(" = new RevoluteJoint(").append(idNameMap.get(body1)).append(", ").append(idNameMap.get(body2)).append(", ").append(export(rj.getAnchor1())).append(");").append(NEW_LINE)
-				.append(TAB2).append("joint").append(i).append(".setLimitEnabled(").append(rj.isLimitEnabled()).append(");").append(NEW_LINE)
+				.append(TAB2).append("joint").append(i).append(".setLimitsEnabled(").append(rj.isLimitsEnabled()).append(");").append(NEW_LINE)
 				.append(TAB2).append("joint").append(i).append(".setLimits(Math.toRadians(").append(Math.toDegrees(rj.getLowerLimit())).append("), Math.toRadians(").append(Math.toDegrees(rj.getUpperLimit())).append("));").append(NEW_LINE)
-				.append(TAB2).append("joint").append(i).append(".setReferenceAngle(Math.toRadians(").append(Math.toDegrees(rj.getReferenceAngle())).append("));").append(NEW_LINE)
+				.append(TAB2).append("joint").append(i).append(".setLimitsReferenceAngle(Math.toRadians(").append(Math.toDegrees(rj.getLimitsReferenceAngle())).append("));").append(NEW_LINE)
 				.append(TAB2).append("joint").append(i).append(".setMotorEnabled(").append(rj.isMotorEnabled()).append(");").append(NEW_LINE)
 				.append(TAB2).append("joint").append(i).append(".setMotorSpeed(Math.toRadians(").append(Math.toDegrees(rj.getMotorSpeed())).append("));").append(NEW_LINE)
 				.append(TAB2).append("joint").append(i).append(".setMaximumMotorTorque(").append(rj.getMaximumMotorTorque()).append(");").append(NEW_LINE);
 			} else if (joint instanceof WeldJoint) {
 				WeldJoint<?> wj = (WeldJoint<?>)joint;
+				Body body1 = (Body)wj.getBody1();
+				Body body2 = (Body)wj.getBody2();
 				sb.append(TAB2).append("WeldJoint joint").append(i).append(" = new WeldJoint(").append(idNameMap.get(body1)).append(", ").append(idNameMap.get(body2)).append(", ").append(export(wj.getAnchor1())).append(");").append(NEW_LINE)
-				.append(TAB2).append("joint").append(i).append(".setFrequency(").append(wj.getFrequency()).append(");").append(NEW_LINE)
-				.append(TAB2).append("joint").append(i).append(".setDampingRatio(").append(wj.getDampingRatio()).append(");").append(NEW_LINE)
-				.append(TAB2).append("joint").append(i).append(".setReferenceAngle(Math.toRadians(").append(Math.toDegrees(wj.getReferenceAngle())).append("));").append(NEW_LINE);
+				.append(TAB2).append("joint").append(i).append(".setSpringFrequency(").append(wj.getSpringFrequency()).append(");").append(NEW_LINE)
+				.append(TAB2).append("joint").append(i).append(".setSpringDampingRatio(").append(wj.getSpringDampingRatio()).append(");").append(NEW_LINE)
+				.append(TAB2).append("joint").append(i).append(".setLimitsReferenceAngle(Math.toRadians(").append(Math.toDegrees(wj.getLimitsReferenceAngle())).append("));").append(NEW_LINE);
 			} else if (joint instanceof WheelJoint) {
 				WheelJoint<?> wj = (WheelJoint<?>)joint;
+				Body body1 = (Body)wj.getBody1();
+				Body body2 = (Body)wj.getBody2();
 				sb.append(TAB2).append("WheelJoint joint").append(i).append(" = new WheelJoint(").append(idNameMap.get(body1)).append(", ").append(idNameMap.get(body2)).append(", ").append(export(wj.getAnchor1())).append(", ").append(export(wj.getAxis())).append(");").append(NEW_LINE)
-				.append(TAB2).append("joint").append(i).append(".setFrequency(").append(wj.getFrequency()).append(");").append(NEW_LINE)
-				.append(TAB2).append("joint").append(i).append(".setDampingRatio(").append(wj.getDampingRatio()).append(");").append(NEW_LINE)
+				.append(TAB2).append("joint").append(i).append(".setSpringFrequency(").append(wj.getSpringFrequency()).append(");").append(NEW_LINE)
+				.append(TAB2).append("joint").append(i).append(".setSpringDampingRatio(").append(wj.getSpringDampingRatio()).append(");").append(NEW_LINE)
 				.append(TAB2).append("joint").append(i).append(".setMotorEnabled(").append(wj.isMotorEnabled()).append(");").append(NEW_LINE)
 				.append(TAB2).append("joint").append(i).append(".setMotorSpeed(Math.toRadians(").append(Math.toDegrees(wj.getMotorSpeed())).append("));").append(NEW_LINE)
 				.append(TAB2).append("joint").append(i).append(".setMaximumMotorTorque(").append(wj.getMaximumMotorTorque()).append(");").append(NEW_LINE);
 			} else if (joint instanceof MotorJoint) {
 				MotorJoint<?> mj = (MotorJoint<?>)joint;
+				Body body1 = (Body)mj.getBody1();
+				Body body2 = (Body)mj.getBody2();
 				sb.append(TAB2).append("MotorJoint joint").append(i).append(" = new MotorJoint(").append(idNameMap.get(body1)).append(", ").append(idNameMap.get(body2)).append(");").append(NEW_LINE)
 				.append(TAB2).append("joint").append(i).append(".setLinearTarget(").append(export(mj.getLinearTarget())).append(");").append(NEW_LINE)
 				.append(TAB2).append("joint").append(i).append(".setAngularTarget(Math.toRadians(").append(Math.toDegrees(mj.getAngularTarget())).append("));").append(NEW_LINE)
@@ -404,7 +423,7 @@ public class CodeExporter {
 				.append(TAB2).append("joint").append(i).append(".setMaximumForce(").append(mj.getMaximumForce()).append(");").append(NEW_LINE)
 				.append(TAB2).append("joint").append(i).append(".setMaximumTorque(").append(mj.getMaximumTorque()).append(");").append(NEW_LINE);
 			} else {
-				throw new UnsupportedOperationException(MessageFormat.format(Messages.getString("exception.persist.unknownClass"), joint.getClass().getName()));
+				throw new UnsupportedOperationException("Unknown joint class: " + joint.getClass().getName());
 			}
 			
 			sb.append(TAB2).append("joint").append(i).append(".setCollisionAllowed(").append(joint.isCollisionAllowed()).append(");").append(NEW_LINE);
@@ -637,7 +656,7 @@ public class CodeExporter {
 			CategoryFilter cf = (CategoryFilter)f;
 			sb.append(tabs).append("bf.setFilter(new CategoryFilter(").append(cf.getCategory()).append(", ").append(cf.getMask()).append("));").append(NEW_LINE);
 		} else {
-			throw new UnsupportedOperationException(MessageFormat.format(Messages.getString("exception.persist.unknownClass"), f.getClass().getName()));
+			throw new UnsupportedOperationException("The class " + f.getClass().getName() + " is not known.");
 		}
 		
 		return sb.toString();
