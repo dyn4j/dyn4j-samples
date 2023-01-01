@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2022 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -24,60 +24,46 @@
  */
 package org.dyn4j.samples;
 
-import java.awt.Point;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Vector2;
+import org.dyn4j.samples.framework.Camera;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
+import org.dyn4j.samples.framework.input.BooleanStateMouseInputHandler;
 
 /**
  * A simple scene where you use Mouse Button 3 to create boxes.
  * @author William Bittle
- * @version 4.1.1
+ * @version 5.0.1
  * @since 3.2.0
  */
 public class Stacking extends SimulationFrame {
 	/** The serial version id */
 	private static final long serialVersionUID = -1366264828445805140L;
 
-	/** A point for tracking the mouse click */
-	private Point point;
+	private final BooleanStateMouseInputHandler create;
 	
-	/**
-	 * A custom mouse adapter for listening for mouse clicks.
-	 * @author William Bittle
-	 * @version 3.2.1
-	 * @since 3.2.0
-	 */
-	private final class CustomMouseAdapter extends MouseAdapter {
-		@Override
-		public void mousePressed(MouseEvent e) {
-			// store the mouse click postion for use later
-			if (e.getButton() == MouseEvent.BUTTON3) {
-				point = new Point(e.getX(), e.getY());
-			}
-		}
-		
-		@Override
-		public void mouseReleased(MouseEvent e) {
-			point = null;
-		}
-	}
-
 	/**
 	 * Default constructor.
 	 */
 	public Stacking() {
-		super("Stacking", 32.0);
+		super("Stacking");
 		
-		MouseAdapter ml = new CustomMouseAdapter();
-		this.canvas.addMouseMotionListener(ml);
-		this.canvas.addMouseWheelListener(ml);
-		this.canvas.addMouseListener(ml);
+		this.create = new BooleanStateMouseInputHandler(this.canvas, MouseEvent.BUTTON3);
+		
+		this.create.install();
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#initializeCamera(org.dyn4j.samples.framework.Camera)
+	 */
+	@Override
+	protected void initializeCamera(Camera camera) {
+		super.initializeCamera(camera);
+		camera.scale = 32.0;
 	}
 	
 	/**
@@ -91,6 +77,16 @@ public class Stacking extends SimulationFrame {
 	}
 	
 	/* (non-Javadoc)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#printControls()
+	 */
+	@Override
+	protected void printControls() {
+		super.printControls();
+		
+		this.printControl("Create", "RMB", "Click the right mouse button to create a square");
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.dyn4j.samples.framework.SimulationFrame#handleEvents()
 	 */
 	@Override
@@ -98,9 +94,10 @@ public class Stacking extends SimulationFrame {
 		super.handleEvents();
 		
 		// see if the user clicked
-		if (this.point != null) {
+		if (this.create.isActiveButNotHandled()) {
+			this.create.setHasBeenHandled(true);
 			// convert from screen space to world space coordinates
-			Vector2 v = this.toWorldCoordinates(this.point);
+			Vector2 v = this.toWorldCoordinates(this.create.getMouseLocation());
 			
 			// create a new body
 			SimulationBody no = new SimulationBody();
@@ -108,9 +105,6 @@ public class Stacking extends SimulationFrame {
 			no.translate(v.x, v.y);
 			no.setMass(MassType.NORMAL);
 			this.world.addBody(no);
-			
-			// clear the point
-			this.point = null;
 		}
 	}
 	

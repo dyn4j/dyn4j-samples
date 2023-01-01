@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2022 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -26,13 +26,10 @@ package org.dyn4j.samples;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.dynamics.joint.FrictionJoint;
@@ -42,8 +39,10 @@ import org.dyn4j.geometry.Interval;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Ray;
 import org.dyn4j.geometry.Vector2;
+import org.dyn4j.samples.framework.Camera;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
+import org.dyn4j.samples.framework.input.BooleanStateKeyboardInputHandler;
 import org.dyn4j.world.DetectFilter;
 import org.dyn4j.world.World;
 import org.dyn4j.world.result.RaycastResult;
@@ -51,90 +50,73 @@ import org.dyn4j.world.result.RaycastResult;
 /**
  * A scene were a player controled tank raycasts against the world.
  * @author William Bittle
- * @version 4.1.1
+ * @version 5.0.1
  * @since 3.0.0
  */
 public class Tank extends SimulationFrame {
 	/** The serial version id */
 	private static final long serialVersionUID = 1462952703366297615L;
 
+	private static final Object INDESTRUCTIBLE = new Object();
+	
 	// controls
-	private final AtomicBoolean driveForward = new AtomicBoolean(false);
-	private final AtomicBoolean driveBackward = new AtomicBoolean(false);
-	private final AtomicBoolean rotateLeft = new AtomicBoolean(false);
-	private final AtomicBoolean rotateRight = new AtomicBoolean(false);
-	private final AtomicBoolean rotateTurretLeft = new AtomicBoolean(false);
-	private final AtomicBoolean rotateTurretRight = new AtomicBoolean(false);
+	private final BooleanStateKeyboardInputHandler driveForward;
+	private final BooleanStateKeyboardInputHandler driveBackward;
+	private final BooleanStateKeyboardInputHandler rotateLeft;
+	private final BooleanStateKeyboardInputHandler rotateRight;
+	private final BooleanStateKeyboardInputHandler rotateTurretLeft;
+	private final BooleanStateKeyboardInputHandler rotateTurretRight;
+	private final BooleanStateKeyboardInputHandler shoot;
 	
 	private SimulationBody tank;
 	private SimulationBody barrel;
 	
 	/**
-	 * Custom key adapter to listen for key events.
-	 * @author William Bittle
-	 * @version 3.2.1
-	 * @since 3.2.0
-	 */
-	private class CustomKeyListener extends KeyAdapter {
-		@Override
-		public void keyPressed(KeyEvent e) {
-			switch (e.getKeyCode()) {
-				case KeyEvent.VK_LEFT:
-					rotateTurretLeft.set(true);
-					break;
-				case KeyEvent.VK_RIGHT:
-					rotateTurretRight.set(true);
-					break;
-				case KeyEvent.VK_W:
-					driveForward.set(true);
-					break;
-				case KeyEvent.VK_S:
-					driveBackward.set(true);
-					break;
-				case KeyEvent.VK_A:
-					rotateLeft.set(true);
-					break;
-				case KeyEvent.VK_D:
-					rotateRight.set(true);
-					break;
-			}
-			
-		}
-		
-		@Override
-		public void keyReleased(KeyEvent e) {
-			switch (e.getKeyCode()) {
-				case KeyEvent.VK_LEFT:
-					rotateTurretLeft.set(false);
-					break;
-				case KeyEvent.VK_RIGHT:
-					rotateTurretRight.set(false);
-					break;
-				case KeyEvent.VK_W:
-					driveForward.set(false);
-					break;
-				case KeyEvent.VK_S:
-					driveBackward.set(false);
-					break;
-				case KeyEvent.VK_A:
-					rotateLeft.set(false);
-					break;
-				case KeyEvent.VK_D:
-					rotateRight.set(false);
-					break;
-			}
-		}
-	}
-	
-	/**
 	 * Default constructor.
 	 */
 	public Tank() {
-		super("Raycast", 48.0);
+		super("Tank");
 		
-		KeyListener listener = new CustomKeyListener();
-		this.addKeyListener(listener);
-		this.canvas.addKeyListener(listener);
+		this.driveForward = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_W);
+		this.driveBackward = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_S);
+		this.rotateLeft = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_A);
+		this.rotateRight = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_D);
+		this.rotateTurretLeft = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_LEFT);
+		this.rotateTurretRight = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_RIGHT);
+		this.shoot = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_E);
+		
+		this.driveForward.install();
+		this.driveBackward.install();
+		this.rotateLeft.install();
+		this.rotateRight.install();
+		this.rotateTurretLeft.install();
+		this.rotateTurretRight.install();
+		this.shoot.install();
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#initializeCamera(org.dyn4j.samples.framework.Camera)
+	 */
+	@Override
+	protected void initializeCamera(Camera camera) {
+		super.initializeCamera(camera);
+		camera.scale = 48.0;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#printControls()
+	 */
+	@Override
+	protected void printControls() {
+		super.printControls();
+		
+		printControl("Move Forward", "w", "Use the w key to move forward");
+		printControl("Move Backward", "s", "Use the s key to move backward");
+		printControl("Rotate Left", "a", "Use the a key to rotate left");
+		printControl("Rotate Right", "d", "Use the d key to rotate right");
+		printControl("Barrel Left", "Left", "Use the left key to rotate the barrel left");
+		printControl("Barrel Right", "Right", "Use the right key to rotate the barrel right");
+		printControl("Shoot", "e", "Use the e key to shoot");
 	}
 	
 	/**
@@ -155,6 +137,7 @@ public class Tank extends SimulationFrame {
 
 	    // Circle
 	    SimulationBody circle = new SimulationBody();
+	    circle.setUserData(INDESTRUCTIBLE);
 	    circle.addFixture(Geometry.createCircle(0.5));
 	    circle.translate(new Vector2(3.2, 3.5));
 	    circle.setMass(MassType.INFINITE);
@@ -227,7 +210,7 @@ public class Tank extends SimulationFrame {
 		super.render(g, elapsedTime);
 		
 		final double r = 4.0;
-		final double scale = this.getScale();
+		final double scale = this.getCameraScale();
 		final double length = 100;
 		
 		Vector2 start = this.barrel.getTransform().getTransformed(new Vector2(0.0, 0.55));
@@ -260,45 +243,48 @@ public class Tank extends SimulationFrame {
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#handleEvents()
+	 */
 	@Override
 	protected void handleEvents() {
 		super.handleEvents();
 		
-		if (this.rotateTurretLeft.get()) {
+		if (this.rotateTurretLeft.isActive()) {
 			Vector2 normal = this.barrel.getTransform().getTransformedR(new Vector2(-1.0, 0.0));
-			normal.multiply(0.08);
+			normal.multiply(0.1);
 			
 			Vector2 point = this.barrel.getTransform().getTransformed(new Vector2(0.0, 1.0));
 			this.barrel.applyForce(normal, point);
 		}
 		
-		if (this.rotateTurretRight.get()) {
+		if (this.rotateTurretRight.isActive()) {
 			Vector2 normal = this.barrel.getTransform().getTransformedR(new Vector2(1.0, 0.0));
-			normal.multiply(0.08);
+			normal.multiply(0.1);
 			
 			Vector2 point = this.barrel.getTransform().getTransformed(new Vector2(0.0, 1.0));
 			this.barrel.applyForce(normal, point);
 		}
 		
-		if (this.driveForward.get()) {
+		if (this.driveForward.isActive()) {
 			Vector2 normal = this.tank.getTransform().getTransformedR(new Vector2(0.0, 1.0));
 			normal.multiply(5);
 			
 			tank.applyForce(normal);
 		}
 		
-		if (this.driveBackward.get()) {
+		if (this.driveBackward.isActive()) {
 			Vector2 normal = this.tank.getTransform().getTransformedR(new Vector2(0.0, 1.0));
 			normal.multiply(-5);
 			
 			tank.applyForce(normal);
 		}
 		
-		if (this.rotateLeft.get()) {
+		if (this.rotateLeft.isActive()) {
 			tank.applyTorque(Math.PI / 2);
 		}
 		
-		if (this.rotateRight.get()) {
+		if (this.rotateRight.isActive()) {
 			tank.applyTorque(-Math.PI / 2);
 		}
 		
@@ -313,6 +299,33 @@ public class Tank extends SimulationFrame {
 		double av = tank.getAngularVelocity();
 		av = Interval.clamp(av, -1, 1);
 		tank.setAngularVelocity(av);
+		
+		// clamp the angular velocity of the barrel
+		av = barrel.getAngularVelocity();
+		av = Interval.clamp(av, -1, 1);
+		barrel.setAngularVelocity(av);
+		
+		if (this.shoot.isActiveButNotHandled()) {
+			this.shoot.setHasBeenHandled(true);
+			final double length = 100;
+			
+			Vector2 start = this.barrel.getTransform().getTransformed(new Vector2(0.0, 0.55));
+			Vector2 direction = this.barrel.getTransform().getTransformedR(new Vector2(0.0, 1.0));
+			
+			Ray ray = new Ray(start, direction);
+			RaycastResult<SimulationBody, BodyFixture> result = 
+					this.world.raycastClosest(ray, length, new DetectFilter<SimulationBody, BodyFixture>(true, true, null) {
+						@Override
+						public boolean isAllowed(SimulationBody body, BodyFixture fixture) {
+							boolean isAllowed = super.isAllowed(body, fixture);
+							return isAllowed && body.getUserData() != INDESTRUCTIBLE;
+						}
+					});
+			
+			if (result != null) {
+				this.world.removeBody(result.getBody());
+			}
+		}
 	}
 	
 	/**

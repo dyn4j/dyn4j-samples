@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2016 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2022 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -29,13 +29,14 @@ import org.dyn4j.geometry.Convex;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Vector2;
+import org.dyn4j.samples.framework.Camera;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
 
 /**
  * A somewhat complex scene with a ragdoll.
  * @author William Bittle
- * @since 3.2.1
+ * @since 5.0.0
  * @version 3.2.0
  */
 public class Ragdoll extends SimulationFrame {
@@ -46,8 +47,7 @@ public class Ragdoll extends SimulationFrame {
 	 * Default constructor.
 	 */
 	public Ragdoll() {
-		super("Ragdoll", 64.0);
-		this.setOffsetY(300);
+		super("Ragdoll");
 	}
 	
 	/**
@@ -183,6 +183,16 @@ public class Ragdoll extends SimulationFrame {
 	    // Left Femur to Left Tibia
 	    RevoluteJoint<SimulationBody> leftFemurToLeftTibia = new RevoluteJoint<SimulationBody>(leftFemur, leftTibia, new Vector2(-0.14, -1.9));
 	    world.addJoint(leftFemurToLeftTibia);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#initializeCamera(org.dyn4j.samples.framework.Camera)
+	 */
+	@Override
+	protected void initializeCamera(Camera camera) {
+		super.initializeCamera(camera);
+		camera.scale = 64.0;
+		camera.offsetY = 300;
 	}
 	
 	/**

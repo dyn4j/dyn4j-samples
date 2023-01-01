@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2022 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -24,31 +24,63 @@
  */
 package org.dyn4j.samples;
 
+import java.awt.event.KeyEvent;
+
 import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.dynamics.ContinuousDetectionMode;
-import org.dyn4j.dynamics.joint.RevoluteJoint;
+import org.dyn4j.dynamics.joint.WheelJoint;
 import org.dyn4j.geometry.Convex;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Vector2;
+import org.dyn4j.samples.framework.Camera;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
+import org.dyn4j.samples.framework.input.BooleanStateKeyboardInputHandler;
 
 /**
  * A scene where a truck is carrying other objects.
  * @author William Bittle
- * @since 4.1.1
+ * @since 5.0.1
  * @version 4.1.1
  */
 public class Truck extends SimulationFrame {
 	/** The serial version id */
 	private static final long serialVersionUID = 4610026750399376114L;
 
+	private final BooleanStateKeyboardInputHandler left;
+	private final BooleanStateKeyboardInputHandler right;
+	private final BooleanStateKeyboardInputHandler stop;
+	
+	private double speed;
+	private WheelJoint<SimulationBody> wj1;
+	private WheelJoint<SimulationBody> wj2;
+	
 	/**
 	 * Default constructor.
 	 */
 	public Truck() {
-		super("Truck", 16.0);
+		super("Truck");
+		
+		this.left = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_LEFT);
+		this.right = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_RIGHT);
+		this.stop = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_S);
+		
+		this.left.install();
+		this.right.install();
+		this.stop.install();
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#printControls()
+	 */
+	@Override
+	protected void printControls() {
+		super.printControls();
+		
+		printControl("Move Left", "Left", "Use the left key to accelerate left");
+		printControl("Move Right", "Right", "Use the right key to accelerate right");
+		printControl("Stop", "s", "Use the s key to stop");
 	}
 	
 	/**
@@ -114,18 +146,22 @@ public class Truck extends SimulationFrame {
 	    world.addBody(frontWheel);
 
 	    // Rear Motor
-	    RevoluteJoint<SimulationBody> rearWheelJoint = new RevoluteJoint<SimulationBody>(truck, rearWheel, new Vector2(-25.0, -3.0));
+	    WheelJoint<SimulationBody> rearWheelJoint = new WheelJoint<SimulationBody>(truck, rearWheel, new Vector2(-25.0, -3.0), new Vector2(0.0, -1.0));
 	    rearWheelJoint.setMotorEnabled(true);
-	    rearWheelJoint.setMotorSpeed(Math.toRadians(360.0));
+	    rearWheelJoint.setMotorSpeed(0.0);
+	    rearWheelJoint.setMaximumMotorTorqueEnabled(true);
 	    rearWheelJoint.setMaximumMotorTorque(1000.0);
 	    world.addJoint(rearWheelJoint);
+	    this.wj1 = rearWheelJoint;
 	    
 	    // Front Motor
-	    RevoluteJoint<SimulationBody> frontWheelJoint = new RevoluteJoint<SimulationBody>(truck, frontWheel, new Vector2(-21.0, -3.0));
+	    WheelJoint<SimulationBody> frontWheelJoint = new WheelJoint<SimulationBody>(truck, frontWheel, new Vector2(-21.0, -3.0), new Vector2(0.0, -1.0));
 	    frontWheelJoint.setMotorEnabled(true);
-	    frontWheelJoint.setMotorSpeed(Math.toRadians(360.0));
-	    frontWheelJoint.setMaximumMotorTorque(1000.0);
+	    frontWheelJoint.setMotorSpeed(0.0);
+	    frontWheelJoint.setMaximumMotorTorqueEnabled(true);
+	    frontWheelJoint.setMaximumMotorTorque(1000);
 	    world.addJoint(frontWheelJoint);
+	    this.wj2 = frontWheelJoint;
 	    
 	    // put some stuff in the back of the truck
 	    double x = -24;
@@ -140,6 +176,42 @@ public class Truck extends SimulationFrame {
 	    	    world.addBody(box);
 	    	}
 	    }
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#initializeCamera(org.dyn4j.samples.framework.Camera)
+	 */
+	@Override
+	protected void initializeCamera(Camera camera) {
+		super.initializeCamera(camera);
+		camera.scale = 16.0;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#handleEvents()
+	 */
+	@Override
+	protected void handleEvents() {
+		super.handleEvents();
+		
+		if (this.left.isActive()) {
+			this.speed += Math.PI / 100;
+		}
+		if (this.right.isActive()) {
+			this.speed -= Math.PI / 100;
+		}
+		if (this.stop.isActive()) {
+			this.speed = 0.0;
+		}
+		
+		if (this.wj1 != null) {
+			this.wj1.setMotorSpeed(this.speed);
+		}
+		if (this.wj2 != null) {
+			this.wj2.setMotorSpeed(this.speed);
+		}
+		
+		
 	}
 	
 	/**

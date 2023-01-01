@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2022 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -28,13 +28,14 @@ import org.dyn4j.geometry.Convex;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Vector2;
+import org.dyn4j.samples.framework.Camera;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
 
 /**
  * An example of using a "Concave" body.
  * @author William Bittle
- * @since 4.1.1
+ * @since 5.0.0
  * @version 4.1.1
  */
 public class Concave extends SimulationFrame {
@@ -45,9 +46,7 @@ public class Concave extends SimulationFrame {
 	 * Default constructor.
 	 */
 	public Concave() {
-		super("Concave", 64.0);
-		
-		this.setOffsetY(-200);
+		super("Concave");
 	}
 	
 	/* (non-Javadoc)
@@ -87,6 +86,13 @@ public class Concave extends SimulationFrame {
 	    box.translate(new Vector2(0.0, 1.0));
 	    box.setMass(MassType.NORMAL);
 	    world.addBody(box);
+	}
+	
+	@Override
+	protected void initializeCamera(Camera camera) {
+		super.initializeCamera(camera);
+		camera.scale = 64.0;
+		camera.offsetY = -200.0;
 	}
 	
 	/**

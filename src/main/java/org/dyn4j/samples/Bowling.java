@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2022 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -32,6 +32,7 @@ import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.Link;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Vector2;
+import org.dyn4j.samples.framework.Camera;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
 
@@ -40,7 +41,7 @@ import org.dyn4j.samples.framework.SimulationFrame;
  * <p>
  * The pins can interact with anything in the ALL and BALL groups, but not with themselves.
  * @author William Bittle
- * @version 4.1.1
+ * @version 5.0.0
  * @since 3.2.1
  */
 public class Bowling extends SimulationFrame {
@@ -56,10 +57,7 @@ public class Bowling extends SimulationFrame {
 	 * Default constructor.
 	 */
 	public Bowling() {
-		super("Bowling", 64.0);
-		
-		this.setOffsetY(-150);
-		this.setOffsetX(-100);
+		super("Bowling");
 	}
 	
 	/**
@@ -134,6 +132,14 @@ public class Bowling extends SimulationFrame {
 			this.world.addBody(pin);
 			x += 0.06;
 		}
+	}
+	
+	@Override
+	protected void initializeCamera(Camera camera) {
+		super.initializeCamera(camera);
+		camera.scale = 64.0;
+		camera.offsetX = -150.0;
+		camera.offsetY = -100.0;
 	}
 	
 	/**

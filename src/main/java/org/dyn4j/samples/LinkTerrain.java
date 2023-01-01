@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2022 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -31,6 +31,7 @@ import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.Link;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Vector2;
+import org.dyn4j.samples.framework.Camera;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
 
@@ -38,7 +39,7 @@ import org.dyn4j.samples.framework.SimulationFrame;
  * A simple scene of a terrain made using the {@link Link}s to avoid
  * the internal edge collision problem.
  * @author William Bittle
- * @version 4.2.0
+ * @version 5.0.0
  * @since 3.2.2
  */
 public class LinkTerrain extends SimulationFrame {
@@ -49,7 +50,7 @@ public class LinkTerrain extends SimulationFrame {
 	 * Default constructor for the window
 	 */
 	public LinkTerrain() {
-		super("LinkTerrain", 64.0);
+		super("LinkTerrain");
 		
 		this.pause();
 	}
@@ -85,6 +86,15 @@ public class LinkTerrain extends SimulationFrame {
 		slider.setLinearVelocity(6.2, 0);
 		slider.translate(-5.5, 1.0);
 		this.world.addBody(slider);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#initializeCamera(org.dyn4j.samples.framework.Camera)
+	 */
+	@Override
+	protected void initializeCamera(Camera camera) {
+		super.initializeCamera(camera);
+		camera.scale = 64.0;
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2022 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -30,13 +30,14 @@ import org.dyn4j.geometry.Convex;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Vector2;
+import org.dyn4j.samples.framework.Camera;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
 
 /**
  * A scene where we create a suspension bridge via RevoluteJoints.
  * @author William Bittle
- * @version 4.1.1
+ * @version 5.0.0
  * @since 4.1.1
  */
 public class Bridge extends SimulationFrame {
@@ -47,7 +48,7 @@ public class Bridge extends SimulationFrame {
 	 * Default constructor.
 	 */
 	public Bridge() {
-		super("Bridge", 32.0);
+		super("Bridge");
 	}
 	
 	/**
@@ -90,6 +91,15 @@ public class Bridge extends SimulationFrame {
 	    // connect the last body with the ground
 	    RevoluteJoint<SimulationBody> rj = new RevoluteJoint<SimulationBody>(prev, ground, new Vector2(hn + hw, y));
 	    world.addJoint(rj);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#initializeCamera(org.dyn4j.samples.framework.Camera)
+	 */
+	@Override
+	protected void initializeCamera(Camera camera) {
+		super.initializeCamera(camera);
+		camera.scale = 32.0;
 	}
 	
 	/**

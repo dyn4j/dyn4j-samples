@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2022 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -33,6 +33,7 @@ import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Vector2;
+import org.dyn4j.samples.framework.Camera;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
 import org.dyn4j.samples.framework.input.BooleanStateKeyboardInputHandler;
@@ -42,7 +43,7 @@ import org.dyn4j.samples.framework.input.BooleanStateKeyboardInputHandler;
  * to allow control.  Control is given by the left, right, up, and down keys
  * and applies forces when pressed.
  * @author William Bittle
- * @version 4.1.1
+ * @version 5.0.1
  * @since 3.2.0
  */
 public class Thrust extends SimulationFrame {
@@ -63,7 +64,7 @@ public class Thrust extends SimulationFrame {
 	 * Default constructor.
 	 */
 	public Thrust() {
-		super("Thrust", 64.0);
+		super("Thrust");
 		
 		this.up = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_UP);
 		this.down = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_DOWN);
@@ -74,6 +75,28 @@ public class Thrust extends SimulationFrame {
 		this.down.install();
 		this.left.install();
 		this.right.install();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#initializeCamera(org.dyn4j.samples.framework.Camera)
+	 */
+	@Override
+	protected void initializeCamera(Camera camera) {
+		super.initializeCamera(camera);
+		camera.scale = 64.0;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#printControls()
+	 */
+	@Override
+	protected void printControls() {
+		super.printControls();
+		
+		printControl("Thrust Up", "Up", "Use the up key to apply thrust to move up");
+		printControl("Thrust Down", "Down", "Use the down key to apply thrust to move down");
+		printControl("Thrust Left", "Left", "Use the left key to apply thrust to move left");
+		printControl("Thrust Right", "Right", "Use the right key to apply thrust to move right");
 	}
 	
 	/**
@@ -126,7 +149,7 @@ public class Thrust extends SimulationFrame {
 	protected void render(Graphics2D g, double elapsedTime) {
 		super.render(g, elapsedTime);
 		
-		final double scale = this.getScale();
+		final double scale = this.getCameraScale();
 		final double force = 1000 * elapsedTime;
 		
         final Vector2 r = new Vector2(ship.getTransform().getRotationAngle() + Math.PI * 0.5);
@@ -139,7 +162,7 @@ public class Thrust extends SimulationFrame {
         	
         	ship.applyForce(f);
         	
-        	g.setColor(Color.ORANGE);
+        	g.setColor(Color.RED);
         	g.draw(new Line2D.Double(p.x * scale, p.y * scale, (p.x - f.x) * scale, (p.y - f.y) * scale));
         } 
         if (this.down.isActive()) {
@@ -148,7 +171,7 @@ public class Thrust extends SimulationFrame {
         	
         	ship.applyForce(f);
         	
-        	g.setColor(Color.ORANGE);
+        	g.setColor(Color.RED);
         	g.draw(new Line2D.Double(p.x * scale, p.y * scale, (p.x - f.x) * scale, (p.y - f.y) * scale));
         }
         if (this.left.isActive()) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2022 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -29,13 +29,14 @@ import org.dyn4j.dynamics.joint.RevoluteJoint;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Vector2;
+import org.dyn4j.samples.framework.Camera;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
 
 /**
  * A scene that replicates a piston in an ICE.
  * @author William Bittle
- * @since 4.1.1
+ * @since 5.0.0
  * @version 4.1.1
  */
 public class Crank extends SimulationFrame {
@@ -46,9 +47,7 @@ public class Crank extends SimulationFrame {
 	 * Default constructor.
 	 */
 	public Crank() {
-		super("Crank", 32.0);
-		
-		this.setOffsetY(-200);
+		super("Crank");
 	}
 	
 	/* (non-Javadoc)
@@ -98,6 +97,16 @@ public class Crank extends SimulationFrame {
 	    // keeps the piston moving along the y-axis
 	    PrismaticJoint<SimulationBody> pistonPathJoint = new PrismaticJoint<SimulationBody>(ground, piston, new Vector2(0.0, 9.75), new Vector2(0.0, 1.0));
 	    world.addJoint(pistonPathJoint);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#initializeCamera(org.dyn4j.samples.framework.Camera)
+	 */
+	@Override
+	protected void initializeCamera(Camera camera) {
+		super.initializeCamera(camera);
+		camera.scale = 32.0;
+		camera.offsetY = -200.0;
 	}
 	
 	/**

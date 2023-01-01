@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2022 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -58,6 +58,7 @@ import org.dyn4j.geometry.AABB;
 import org.dyn4j.geometry.Transform;
 import org.dyn4j.geometry.Vector2;
 import org.dyn4j.samples.framework.input.ToggleStateKeyboardInputHandler;
+import org.dyn4j.samples.framework.input.BooleanStateKeyboardInputHandler;
 import org.dyn4j.samples.framework.input.CodeExporter;
 import org.dyn4j.samples.framework.input.MousePanningInputHandler;
 import org.dyn4j.samples.framework.input.MousePickingInputHandler;
@@ -65,9 +66,11 @@ import org.dyn4j.samples.framework.input.MouseZoomInputHandler;
 import org.dyn4j.world.World;
 import org.dyn4j.world.WorldCollisionData;
 
+// TODO create a streaming world example
+
 /**
  * A simple framework for building samples.
- * @version 4.2.0
+ * @version 5.0.0
  * @since 3.2.0
  */
 public abstract class SimulationFrame extends JFrame {
@@ -102,6 +105,8 @@ public abstract class SimulationFrame extends JFrame {
 	
 	private final ToggleStateKeyboardInputHandler paused;
 	private final ToggleStateKeyboardInputHandler step;
+	private final BooleanStateKeyboardInputHandler reset;
+	private final BooleanStateKeyboardInputHandler resetCamera;
 	
 	private final MousePickingInputHandler picking;
 	private final MousePanningInputHandler panning;
@@ -112,6 +117,7 @@ public abstract class SimulationFrame extends JFrame {
 	private final ToggleStateKeyboardInputHandler renderBodyRotationRadius;
 	private final ToggleStateKeyboardInputHandler renderFixtureAABBs;
 	private final ToggleStateKeyboardInputHandler renderFixtureRotationRadius;
+	private final ToggleStateKeyboardInputHandler renderBounds;
 	
 	private final ToggleStateKeyboardInputHandler printStepNumber;
 	private final ToggleStateKeyboardInputHandler printSimulation; 
@@ -123,11 +129,10 @@ public abstract class SimulationFrame extends JFrame {
 	 * @param name the frame name
 	 * @param scale the pixels per meter scale factor
 	 */
-	public SimulationFrame(String name, double scale) {
+	public SimulationFrame(String name) {
 		super(name);
 		
 		this.camera = new Camera();
-		this.camera.scale = scale;
 		
 		// create the world
 		this.world = new World<SimulationBody>();
@@ -170,43 +175,83 @@ public abstract class SimulationFrame extends JFrame {
 		this.canvas.requestFocus();
 		
 		// install input handlers
-		this.picking = new MousePickingInputHandler(this.canvas, this.camera, this.world);
+		this.picking = new MousePickingInputHandler(this.canvas, this.camera, this.world) {
+			@Override
+			public void onPickingStart(SimulationBody body) {
+				super.onPickingStart(body);
+				SimulationFrame.this.onBodyMousePickingStart(body);
+			}
+			@Override
+			public void onPickingEnd(SimulationBody body) {
+				super.onPickingEnd(body);
+				SimulationFrame.this.onBodyMousePickingEnd(body);
+			}
+		};
 		this.picking.install();
-		this.panning = new MousePanningInputHandler(this.canvas, this.camera);
+		this.panning = new MousePanningInputHandler(this.canvas);
 		this.panning.install();
 		// panning and picking are dependent
 		this.picking.getDependentBehaviors().add(this.panning);
 		this.panning.getDependentBehaviors().add(this.picking);
 		
-		this.zoom = new MouseZoomInputHandler(this.canvas, this.camera, MouseEvent.BUTTON1);
+		this.zoom = new MouseZoomInputHandler(this.canvas, MouseEvent.BUTTON1);
 		this.zoom.install();
 		
 		this.paused = new ToggleStateKeyboardInputHandler(this.canvas, KeyEvent.VK_SPACE);
 		this.step = new ToggleStateKeyboardInputHandler(this.canvas, KeyEvent.VK_ENTER);
+		this.reset = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_R);
+		this.resetCamera = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_H);
 		this.renderContacts = new ToggleStateKeyboardInputHandler(this.canvas, KeyEvent.VK_C);
 		this.renderBodyAABBs = new ToggleStateKeyboardInputHandler(this.canvas, KeyEvent.VK_B);
 		this.renderBodyRotationRadius = new ToggleStateKeyboardInputHandler(this.canvas, KeyEvent.VK_B);
 		this.renderFixtureAABBs = new ToggleStateKeyboardInputHandler(this.canvas, KeyEvent.VK_F);
 		this.renderFixtureRotationRadius = new ToggleStateKeyboardInputHandler(this.canvas, KeyEvent.VK_F);
+		this.renderBounds = new ToggleStateKeyboardInputHandler(this.canvas, KeyEvent.VK_Z);
 		
 		this.paused.install();
 		this.step.install();
 		this.step.setDependentBehaviorsAdditive(true);
 		this.step.getDependentBehaviors().add(this.paused);
+		this.reset.install();
+		this.resetCamera.install();
 		this.renderContacts.install();
 		this.renderBodyAABBs.install();
 		this.renderBodyRotationRadius.install();
 		this.renderFixtureAABBs.install();
 		this.renderFixtureRotationRadius.install();
+		this.renderBounds.install();
 
-		this.printSimulation = new ToggleStateKeyboardInputHandler(this.canvas, KeyEvent.VK_NUMPAD0);
-		this.printStepNumber = new ToggleStateKeyboardInputHandler(this.canvas, KeyEvent.VK_NUMPAD1);
+		this.printSimulation = new ToggleStateKeyboardInputHandler(this.canvas, KeyEvent.VK_NUMPAD0, KeyEvent.VK_0);
+		this.printStepNumber = new ToggleStateKeyboardInputHandler(this.canvas, KeyEvent.VK_NUMPAD1, KeyEvent.VK_1);
 		
 		this.printSimulation.install();
 		this.printStepNumber.install();
 		
-		// setup the world
-		this.initializeWorld();
+		this.printControls();
+	}
+	
+	protected void printControl(String name, String input, String message) {
+		System.out.println(String.format("%1$-18s %2$-8s %3$s", name, input, message));
+	}
+	
+	protected void printControls() {
+		System.out.println("Controls:");
+		System.out.println("------------------------------------------------------------------------------");
+		printControl("Name", "Input", "Description");
+		System.out.println("------------------------------------------------------------------------------");
+		printControl("Move", "LMB", "Click & hold the left mouse button to move object");
+		printControl("Pan", "LMB", "Click & hold the left mouse button anywhere to pan");
+		printControl("Zoom", "MW", "Mouse wheel up and down to zoom in and out");
+		printControl("Pause", "Space", "Use the space bar to pause/unpause");
+		printControl("Step", "Enter", "Use the enter key to step the scene when paused");
+		printControl("Reset", "r", "Use the r key to reset the simulation");
+		printControl("Home", "h", "Use the h key to reset the camera");
+		printControl("Contacts", "c", "Use the c key to toggle drawing of contacts");
+		printControl("Body Bounds", "b", "Use the b key to toggle drawing of body bounds");
+		printControl("Fixture Bounds", "f", "Use the f key to toggle drawing of fixture bounds");
+		printControl("World Bounds", "z", "Use the z key to toggle drawing of world bounds");
+		printControl("Print Code", "0", "Use the 0 key to print the scene to code");
+		printControl("Print Step", "1", "Use the 1 key to print the scene step number");
 	}
 	
 	/**
@@ -215,11 +260,39 @@ public abstract class SimulationFrame extends JFrame {
 	protected abstract void initializeWorld();
 	
 	/**
+	 * Initializes the camera position and scale.
+	 */
+	protected void initializeCamera(Camera camera) {
+		camera.scale = 16.0;
+		camera.offsetX = 0.0;
+		camera.offsetY = 0.0;
+	}
+	
+	/**
+	 * Initializes any simulation settings.
+	 */
+	protected void initializeSettings() {
+		// no-op
+	}
+	
+	/**
+	 * Calls all the initialization methods
+	 */
+	private void initializeSimulation() {
+		this.initializeCamera(this.camera);
+		this.initializeSettings();
+		this.initializeWorld();
+	}
+	
+	/**
 	 * Start active rendering the simulation.
 	 * <p>
 	 * This should be called after the JFrame has been shown.
 	 */
 	private void start() {
+		// setup the world
+		this.initializeSimulation();
+		
 		// initialize the last update time
 		this.last = System.nanoTime();
 		// don't allow AWT to paint the canvas since we are
@@ -283,7 +356,10 @@ public abstract class SimulationFrame extends JFrame {
 
         // update the World
 		if (!this.paused.isActive()) {
-	        this.world.update(elapsedTime);
+	        boolean stepped = this.world.update(elapsedTime);
+	        if (stepped) {
+	        	this.stepNumber++;
+	        }
 		} else if (this.step.isActive()) {
 			this.world.step(1);
 			this.stepNumber++;
@@ -348,17 +424,19 @@ public abstract class SimulationFrame extends JFrame {
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
 		// draw the bounds (if set)
-		Bounds bounds = this.world.getBounds();
-		if (bounds != null && bounds instanceof AxisAlignedBounds) {
-			AxisAlignedBounds aab = (AxisAlignedBounds)bounds;
-			AABB aabb = aab.getBounds();
-			Rectangle2D.Double ce = new Rectangle2D.Double(
-					aabb.getMinX() * this.camera.scale,
-					aabb.getMinY() * this.camera.scale,
-					aabb.getWidth() * this.camera.scale,
-					aabb.getHeight() * this.camera.scale);
-			g.setColor(new Color(128, 0, 128));
-			g.draw(ce);
+		if (this.renderBounds.isActive()) {
+			Bounds bounds = this.world.getBounds();
+			if (bounds != null && bounds instanceof AxisAlignedBounds) {
+				AxisAlignedBounds aab = (AxisAlignedBounds)bounds;
+				AABB aabb = aab.getBounds();
+				Rectangle2D.Double ce = new Rectangle2D.Double(
+						aabb.getMinX() * this.camera.scale,
+						aabb.getMinY() * this.camera.scale,
+						aabb.getWidth() * this.camera.scale,
+						aabb.getHeight() * this.camera.scale);
+				g.setColor(new Color(128, 0, 128));
+				g.draw(ce);
+			}
 		}
 		
 		// draw all the objects in the world
@@ -369,7 +447,7 @@ public abstract class SimulationFrame extends JFrame {
 			
 			// body aabb
 			if (this.renderBodyAABBs.isActive()) {
-				AABB aabb = this.world.getContinuousCollisionDetectionBroadphaseDetector().getAABB(body);
+				AABB aabb = this.world.getBroadphaseDetector().getAABB(body);
 				Rectangle2D.Double ce = new Rectangle2D.Double(
 						aabb.getMinX() * this.camera.scale,
 						aabb.getMinY() * this.camera.scale,
@@ -402,7 +480,7 @@ public abstract class SimulationFrame extends JFrame {
 							aabb.getMinY() * this.camera.scale,
 							aabb.getWidth() * this.camera.scale,
 							aabb.getHeight() * this.camera.scale);
-					g.setColor(Color.MAGENTA);
+					g.setColor(Color.CYAN.darker());
 					g.draw(ce);
 				}
 				
@@ -416,7 +494,7 @@ public abstract class SimulationFrame extends JFrame {
 							(c.y - r) * this.camera.scale,
 							r * 2 * this.camera.scale,
 							r * 2 * this.camera.scale);
-					g.setColor(Color.CYAN.darker());
+					g.setColor(Color.MAGENTA);
 					g.draw(e);
 				}
 			}
@@ -522,12 +600,52 @@ public abstract class SimulationFrame extends JFrame {
 			this.printStepNumber.setActive(false);
 			System.out.println("Step #" + this.stepNumber);
 		}
+		
+		if (this.reset.isActiveButNotHandled()) {
+			this.reset.setHasBeenHandled(true);
+			this.reset();
+		}
+		
+		if (this.resetCamera.isActiveButNotHandled()) {
+			this.resetCamera.setHasBeenHandled(true);
+			this.resetCamera();
+		}
+		
+		// update the camera position
+		Vector2 cameraMove = this.panning.getOffsetAndReset();
+		this.camera.offsetX += cameraMove.x;
+		this.camera.offsetY += cameraMove.y;
+		
+		// update the camera zoom
+		double scale = this.zoom.getScaleAndReset();
+		this.camera.scale *= scale;
+		this.camera.offsetX *= scale;
+		this.camera.offsetY *= scale;
+		
+		// update mouse picking location
+		this.picking.updateMousePickingState();
+	}
+	
+	/**
+	 * Called when mouse picking on a body has begun.
+	 * @param body the body
+	 */
+	protected void onBodyMousePickingStart(SimulationBody body) {
+		
+	}
+	
+	/**
+	 * Called when mouse picking on a body has ended.
+	 * @param body the body
+	 */
+	protected void onBodyMousePickingEnd(SimulationBody body) {
+		
 	}
 	
 	/**
 	 * Stops the simulation.
 	 */
-	public synchronized void stop() {
+	public void stop() {
 		this.stopped = true;
 	}
 	
@@ -549,7 +667,7 @@ public abstract class SimulationFrame extends JFrame {
 	/**
 	 * Pauses the simulation.
 	 */
-	public synchronized void resume() {
+	public void resume() {
 		this.last = System.nanoTime();
 		this.paused.setActive(false);
 	}
@@ -560,6 +678,25 @@ public abstract class SimulationFrame extends JFrame {
 	 */
 	public boolean isPaused() {
 		return this.paused.isActive();
+	}
+	
+	/**
+	 * Called when the simulation needs to be reset.
+	 */
+	public void reset() {
+		this.last = System.nanoTime();
+		this.stepNumber = 0;
+		this.world.removeAllBodiesAndJoints();
+		this.world.removeAllListeners();
+		this.initializeSettings();
+		this.initializeWorld();
+	}
+	
+	/**
+	 * Called when the camera needs to be reset.
+	 */
+	public void resetCamera() {
+		this.initializeCamera(this.camera);
 	}
 
 	/**
@@ -678,50 +815,26 @@ public abstract class SimulationFrame extends JFrame {
 	 * Returns the current scale (x pixels / meter)
 	 * @return double
 	 */
-	public double getScale() {
+	public double getCameraScale() {
 		return this.camera.scale;
-	}
-
-	/**
-	 * Sets the scale (zoom).
-	 * @param scale the number of pixels per meter
-	 */
-	public void setScale(double scale) {
-		this.camera.scale = scale;
 	}
 
 	/**
 	 * Returns the x offset (pan-x).
 	 * @return double
 	 */
-	public double getOffsetX() {
+	public double getCameraOffsetX() {
 		return this.camera.offsetX;
-	}
-
-	/**
-	 * Sets the x offset (pan-x).
-	 * @param offsetX the x offset in pixels
-	 */
-	public void setOffsetX(double offsetX) {
-		this.camera.offsetX = offsetX;
 	}
 
 	/**
 	 * Returns the y offset (pan-y).
 	 * @return double
 	 */
-	public double getOffsetY() {
+	public double getCameraOffsetY() {
 		return this.camera.offsetY;
 	}
 
-	/**
-	 * Sets the y offset (pan-y).
-	 * @param offsetY the y offset in pixels
-	 */
-	public void setOffsetY(double offsetY) {
-		this.camera.offsetY = offsetY;
-	}
-	
 	/**
 	 * Generates Java code for the current state of the world.
 	 * @return String

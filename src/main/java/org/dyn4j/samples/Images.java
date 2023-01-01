@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2016 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2022 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -38,13 +38,14 @@ import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Rectangle;
 import org.dyn4j.geometry.Vector2;
+import org.dyn4j.samples.framework.Camera;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
 
 /**
  * A simple scene illustrating the mapping of images to bodies.
  * @author William Bittle
- * @version 3.2.1
+ * @version 5.0.0
  * @since 3.2.0
  */
 public class Images extends SimulationFrame {
@@ -121,7 +122,7 @@ public class Images extends SimulationFrame {
 	 * Default constructor.
 	 */
 	public Images() {
-		super("Images", 45.0);
+		super("Images");
 	}
 	
 	/**
@@ -158,6 +159,15 @@ public class Images extends SimulationFrame {
 		rectangle.translate(0.0, 1.0);
 		rectangle.getLinearVelocity().set(-2, 0);
 		this.world.addBody(rectangle);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#initializeCamera(org.dyn4j.samples.framework.Camera)
+	 */
+	@Override
+	protected void initializeCamera(Camera camera) {
+		super.initializeCamera(camera);
+		camera.scale = 45.0;
 	}
 	
 	/**

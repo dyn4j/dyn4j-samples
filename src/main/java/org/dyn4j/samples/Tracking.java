@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2022 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -32,6 +32,7 @@ import org.dyn4j.dynamics.contact.Contact;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Vector2;
+import org.dyn4j.samples.framework.Camera;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
 import org.dyn4j.world.ContactCollisionData;
@@ -41,7 +42,7 @@ import org.dyn4j.world.listener.ContactListenerAdapter;
  * A simple scene with a few shape types that tracks the creation,
  * persistence and removal of contacts by using their unique ids.
  * @author William Bittle
- * @version 4.1.1
+ * @version 5.0.0
  * @since 3.0.0
  */
 public class Tracking extends SimulationFrame {
@@ -110,7 +111,7 @@ public class Tracking extends SimulationFrame {
 	 * Default constructor.
 	 */
 	public Tracking() {
-		super("Tracking", 45.0);
+		super("Tracking");
 	}
 	
 	/**
@@ -203,6 +204,15 @@ public class Tracking extends SimulationFrame {
 		
 		// attach the contact listener
 		this.world.addContactListener(new CustomContactListener());
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#initializeCamera(org.dyn4j.samples.framework.Camera)
+	 */
+	@Override
+	protected void initializeCamera(Camera camera) {
+		super.initializeCamera(camera);
+		camera.scale = 45.0;
 	}
 	
 	/**

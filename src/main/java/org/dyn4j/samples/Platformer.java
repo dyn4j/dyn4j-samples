@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2022 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -25,11 +25,8 @@
 package org.dyn4j.samples;
 
 import java.awt.Color;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.dyn4j.dynamics.TimeStep;
 import org.dyn4j.dynamics.contact.ContactConstraint;
@@ -37,8 +34,10 @@ import org.dyn4j.geometry.AABB;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Vector2;
+import org.dyn4j.samples.framework.Camera;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
+import org.dyn4j.samples.framework.input.BooleanStateKeyboardInputHandler;
 import org.dyn4j.world.ContactCollisionData;
 import org.dyn4j.world.PhysicsWorld;
 import org.dyn4j.world.listener.ContactListenerAdapter;
@@ -54,34 +53,13 @@ import org.dyn4j.world.listener.StepListenerAdapter;
  * Always keep in mind that this is just an example, production
  * code should be more robust and better organized.
  * @author William Bittle
- * @since 4.1.1
+ * @since 5.0.1
  * @version 3.2.0
  */
 public class Platformer extends SimulationFrame {
 	/** The serial version id */
 	private static final long serialVersionUID = -313391186714427055L;
 
-	/**
-	 * Default constructor for the window
-	 */
-	public Platformer() {
-		super("Platformer", 32.0);
-		
-		KeyListener listener = new CustomKeyListener();
-		this.addKeyListener(listener);
-		this.canvas.addKeyListener(listener);
-	}
-	
-	private SimulationBody wheel;
-	
-	// controls
-	private final AtomicBoolean goLeftPressed = new AtomicBoolean(false);
-	private final AtomicBoolean goRightPressed = new AtomicBoolean(false);
-	private final AtomicBoolean goDownPressed = new AtomicBoolean(false);
-	private final AtomicBoolean jumpPressed = new AtomicBoolean(false);
-	
-	private final AtomicBoolean isOnGround = new AtomicBoolean(false);
-	
 	private static final Color WHEEL_OFF_COLOR = Color.MAGENTA;
 	private static final Color WHEEL_ON_COLOR = Color.GREEN;
 	
@@ -89,45 +67,38 @@ public class Platformer extends SimulationFrame {
 	private static final Object FLOOR = new Object();
 	private static final Object ONE_WAY_PLATFORM = new Object();
 	
+	private final BooleanStateKeyboardInputHandler up;
+	private final BooleanStateKeyboardInputHandler down;
+	private final BooleanStateKeyboardInputHandler left;
+	private final BooleanStateKeyboardInputHandler right;
+
+	private SimulationBody character;
+	private boolean onGround = false;
+	
 	/**
-	 * Custom key adapter to listen for key events.
-	 * @author William Bittle
-	 * @version 3.2.1
-	 * @since 3.2.0
+	 * Default constructor for the window
 	 */
-	private class CustomKeyListener extends KeyAdapter {
-		@Override
-		public void keyPressed(KeyEvent e) {
-			switch (e.getKeyCode()) {
-				case KeyEvent.VK_LEFT:
-					goLeftPressed.set(true);
-					break;
-				case KeyEvent.VK_RIGHT:
-					goRightPressed.set(true);
-					break;
-			}
-			
-		}
+	public Platformer() {
+		super("Platformer");
 		
-		@Override
-		public void keyReleased(KeyEvent e) {
-			switch (e.getKeyCode()) {
-				case KeyEvent.VK_LEFT:
-					goLeftPressed.set(false);
-					break;
-				case KeyEvent.VK_RIGHT:
-					goRightPressed.set(false);
-					break;
-				case KeyEvent.VK_UP:
-					jumpPressed.set(true);
-					break;
-				case KeyEvent.VK_DOWN:
-					if (isOnGround.get()) {
-						goDownPressed.set(true);
-					}
-					break;
-			}
-		}
+		this.up = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_UP);
+		this.down = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_DOWN);
+		this.left = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_LEFT);
+		this.right = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_RIGHT);
+		
+		this.up.install();
+		this.down.install();
+		this.left.install();
+		this.right.install();
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#initializeCamera(org.dyn4j.samples.framework.Camera)
+	 */
+	@Override
+	protected void initializeCamera(Camera camera) {
+		super.initializeCamera(camera);
+		camera.scale = 32.0;
 	}
 	
 	/**
@@ -177,14 +148,14 @@ public class Platformer extends SimulationFrame {
 		this.world.addBody(left);
 		
 		// the wheel
-		wheel = new SimulationBody(WHEEL_OFF_COLOR);
+		character = new SimulationBody(WHEEL_OFF_COLOR);
 		// NOTE: lots of friction to simulate a sticky tire
-		wheel.addFixture(Geometry.createCircle(0.5), 1.0, 20.0, 0.1);
-		wheel.setMass(MassType.NORMAL);
-		wheel.translate(0.0, -2.0);
-		wheel.setUserData(CHARACTER);
-		wheel.setAtRestDetectionEnabled(false);
-		this.world.addBody(wheel);
+		character.addFixture(Geometry.createCircle(0.5), 1.0, 20.0, 0.1);
+		character.setMass(MassType.NORMAL);
+		character.translate(0.0, -2.0);
+		character.setUserData(CHARACTER);
+		character.setAtRestDetectionEnabled(false);
+		this.world.addBody(character);
 		
 		// Use a number of concepts here to support movement, jumping, and one-way
 		// platforms - this is by no means THE solution to these problems, but just
@@ -204,14 +175,16 @@ public class Platformer extends SimulationFrame {
 				super.begin(step, world);
 				
 				boolean isGround = false;
-				List<ContactConstraint<SimulationBody>> contacts = world.getContacts(wheel);
+				List<ContactConstraint<SimulationBody>> contacts = world.getContacts(character);
 				for (ContactConstraint<SimulationBody> cc : contacts) {
-					if (is(cc.getOtherBody(wheel), FLOOR, ONE_WAY_PLATFORM) && cc.isEnabled()) {
+					if (is(cc.getOtherBody(character), FLOOR, ONE_WAY_PLATFORM) && cc.isEnabled()) {
 						isGround = true;
 					}
 				}
+				
+				// only clear it
 				if (!isGround) {
-					isOnGround.set(false);					
+					onGround = false;
 				}
 			}
 		});
@@ -225,10 +198,10 @@ public class Platformer extends SimulationFrame {
 				ContactConstraint<SimulationBody> cc = collision.getContactConstraint();
 				
 				// set the other body to one-way if necessary
-				setOneWay(cc);
+				disableContactForOneWay(cc);
 				
 				// track on the on-ground status
-				setOnGround(cc);
+				trackIsOnGround(cc);
 				
 				super.collision(collision);
 			}
@@ -258,7 +231,7 @@ public class Platformer extends SimulationFrame {
 	 * @param platform the platform body
 	 * @return boolean
 	 */
-	private boolean isOneWay(SimulationBody character, SimulationBody platform) {
+	private boolean allowOneWayUp(SimulationBody character, SimulationBody platform) {
 		AABB wAABB = character.createAABB();
 		AABB pAABB = platform.createAABB();
 		
@@ -269,7 +242,7 @@ public class Platformer extends SimulationFrame {
 		// same direction
 		//
 		// another option might be to project both onto the platform normal to see where they are overlapping
-		if (wAABB.getMinY() < pAABB.getMinY() || goDownPressed.get()) {
+		if (wAABB.getMinY() < pAABB.getMinY()) {
 			return true;
 		}
 		return false;
@@ -280,16 +253,18 @@ public class Platformer extends SimulationFrame {
 	 * the scenario meets the condition for one-way.
 	 * @param contactConstraint the constraint
 	 */
-	private void setOneWay(ContactConstraint<SimulationBody> contactConstraint) {
+	private void disableContactForOneWay(ContactConstraint<SimulationBody> contactConstraint) {
 		SimulationBody b1 = contactConstraint.getBody1();
 		SimulationBody b2 = contactConstraint.getBody2();
 		
 		if (is(b1, CHARACTER) && is(b2, ONE_WAY_PLATFORM)) {
-			if (isOneWay(b1, b2)) {
+			if (allowOneWayUp(b1, b2) || down.isActiveButNotHandled()) {
+				down.setHasBeenHandled(true);
 				contactConstraint.setEnabled(false);
 			}
 		} else if (is(b1, ONE_WAY_PLATFORM) && is(b2, CHARACTER)) {
-			if (isOneWay(b2, b1)) {
+			if (allowOneWayUp(b2, b1) || down.isActiveButNotHandled()) {
+				down.setHasBeenHandled(true);
 				contactConstraint.setEnabled(false);
 			}
 		}
@@ -300,20 +275,18 @@ public class Platformer extends SimulationFrame {
 	 * the character body and a floor or one-way platform.
 	 * @param contactConstraint
 	 */
-	private void setOnGround(ContactConstraint<SimulationBody> contactConstraint) {
+	private void trackIsOnGround(ContactConstraint<SimulationBody> contactConstraint) {
 		SimulationBody b1 = contactConstraint.getBody1();
 		SimulationBody b2 = contactConstraint.getBody2();
 		
 		if (is(b1, CHARACTER) && 
 			is(b2, FLOOR, ONE_WAY_PLATFORM) &&
 			contactConstraint.isEnabled()) {
-			isOnGround.set(true);
-			goDownPressed.set(false);
+			onGround = true;
 		} else if (is(b1, FLOOR, ONE_WAY_PLATFORM) && 
 				   is(b2, CHARACTER) &&
-				contactConstraint.isEnabled()) {
-			isOnGround.set(true);
-			goDownPressed.set(false);
+				   contactConstraint.isEnabled()) {
+			onGround = true;
 		}
 	}
 	
@@ -325,26 +298,26 @@ public class Platformer extends SimulationFrame {
 		super.handleEvents();
 		
 		// apply a torque based on key input
-		if (this.goLeftPressed.get()) {
-			wheel.applyTorque(Math.PI / 2);
+		if (this.left.isActive()) {
+			character.applyTorque(Math.PI / 2);
 		}
-		if (this.goRightPressed.get()) {
-			wheel.applyTorque(-Math.PI / 2);
+		if (this.right.isActive()) {
+			character.applyTorque(-Math.PI / 2);
 		}
 		
 		// only allow jumping if the body is on the ground
-		if (this.jumpPressed.get()) {
-			if (this.isOnGround.get()) {
-				wheel.applyImpulse(new Vector2(0.0, 7));
+		if (this.up.isActiveButNotHandled()) {
+			this.up.setHasBeenHandled(true);
+			if (this.onGround) {
+				character.applyImpulse(new Vector2(0.0, 7));
 			}
-			this.jumpPressed.set(false);
 		}
 		
 		// color the body green if it's on the ground
-		if (this.isOnGround.get()) {
-			wheel.setColor(WHEEL_ON_COLOR);
+		if (this.onGround) {
+			character.setColor(WHEEL_ON_COLOR);
 		} else {
-			wheel.setColor(WHEEL_OFF_COLOR);
+			character.setColor(WHEEL_OFF_COLOR);
 		}
 	}
 	

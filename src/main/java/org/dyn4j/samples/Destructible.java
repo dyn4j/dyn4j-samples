@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2022 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -37,6 +37,7 @@ import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Transform;
 import org.dyn4j.geometry.Vector2;
 import org.dyn4j.geometry.Wound;
+import org.dyn4j.samples.framework.Camera;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
 import org.dyn4j.world.ContactCollisionData;
@@ -46,14 +47,14 @@ import org.dyn4j.world.listener.ContactListenerAdapter;
 /**
  * An example of destruction of bodies and joints
  * @author William Bittle
- * @since 4.1.1
+ * @since 5.0.0
  * @version 4.1.1
  */
 public class Destructible extends SimulationFrame {
 	private static final long serialVersionUID = -3302959427805814281L;
 
 	public Destructible() {
-		super("Destructible", 32);
+		super("Destructible");
 	}
 
 	/**
@@ -201,6 +202,15 @@ public class Destructible extends SimulationFrame {
 		this.world.addBody(bot);
 		this.world.addJoint(this.joint);
 		this.world.addContactListener(this.destructor);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#initializeCamera(org.dyn4j.samples.framework.Camera)
+	 */
+	@Override
+	protected void initializeCamera(Camera camera) {
+		super.initializeCamera(camera);
+		camera.scale = 64.0;
 	}
 	
 	/* (non-Javadoc)

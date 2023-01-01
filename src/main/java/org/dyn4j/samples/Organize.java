@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2022 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -24,9 +24,7 @@
  */
 package org.dyn4j.samples;
 
-import java.awt.Point;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,66 +36,50 @@ import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.Mass;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Vector2;
+import org.dyn4j.samples.framework.Camera;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
+import org.dyn4j.samples.framework.input.BooleanStateKeyboardInputHandler;
 
 /**
  * A scene where a set of different sized bodies are strung together with
  * distance = 0 DistanceJoints that causes the bodies to try to self
  * organize.
  * @author William Bittle
- * @version 4.2.0
+ * @version 5.0.0
  * @since 4.1.1
  */
 public class Organize extends SimulationFrame {
 	/** The serial version id */
 	private static final long serialVersionUID = -2350301592218819726L;
 
-	/** A point for tracking the mouse click */
-	private Point point;
-	
 	/** A list of bodies that can be joined (i.e. excludes the static bodies) */
 	private List<SimulationBody> bodies;
+	
+	private final BooleanStateKeyboardInputHandler organize;
 	
 	/** True if the joints have been added */
 	private boolean jointsAdded = false;
 	
 	/**
-	 * A custom mouse adapter for listening for mouse clicks.
-	 * @author William Bittle
-	 */
-	private final class CustomMouseAdapter extends MouseAdapter {
-		@Override
-		public void mousePressed(MouseEvent e) {
-			// store the mouse click postion for use later
-			point = new Point(e.getX(), e.getY());
-		}
-		
-		@Override
-		public void mouseDragged(MouseEvent e) {
-			// store the mouse click postion for use later
-			point = new Point(e.getX(), e.getY());
-		}
-		
-		@Override
-		public void mouseReleased(MouseEvent e) {
-			point = null;
-		}
-	}
-
-	/**
 	 * Default constructor.
 	 */
 	public Organize() {
-		super("Organize", 48.0);
+		super("Organize");
 		
-		MouseAdapter ml = new CustomMouseAdapter();
-		this.canvas.addMouseMotionListener(ml);
-		this.canvas.addMouseWheelListener(ml);
-		this.canvas.addMouseListener(ml);
+		this.organize = new BooleanStateKeyboardInputHandler(this.canvas, KeyEvent.VK_O);
 		
-		this.setMousePanningEnabled(false);
-		this.setMousePickingEnabled(false);
+		this.organize.install();
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#printControls()
+	 */
+	@Override
+	protected void printControls() {
+		super.printControls();
+		
+		printControl("Organize", "o", "Use the o key to toggle the distance joints");
 	}
 	
 	/**
@@ -142,42 +124,61 @@ public class Organize extends SimulationFrame {
 	}
 	
 	/* (non-Javadoc)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#initializeCamera(org.dyn4j.samples.framework.Camera)
+	 */
+	@Override
+	protected void initializeCamera(Camera camera) {
+		super.initializeCamera(camera);
+		camera.scale = 48.0;
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.dyn4j.samples.framework.SimulationFrame#handleEvents()
 	 */
 	@Override
 	protected void handleEvents() {
 		super.handleEvents();
 		
-		// convert the point from panel space to world space
-		Point p = this.point;
-		if (p != null && !jointsAdded) {
-			jointsAdded = true;
-			Random r = new Random(44);
-			Map<String, Boolean> used = new HashMap<String, Boolean>();
-			for (int i = 0; i < 10; i++) {
-				int n = r.nextInt(19);
-				int m = r.nextInt(19);
-				String name = (n < m ? n : m) + "," + (n > m ? n : m);
-				if (n != m && !used.containsKey(name)) {
-					used.put(name, true);
-					SimulationBody b1 = this.bodies.get(n);
-					SimulationBody b2 = this.bodies.get(m);
-
-					DistanceJoint<SimulationBody> dj = new DistanceJoint<SimulationBody>(b1, b2, b1.getWorldCenter(), b2.getWorldCenter());
-					dj.setCollisionAllowed(true);
-					dj.setRestDistance(0.0);
-					dj.setSpringEnabled(true);
-					dj.setSpringDamperEnabled(true);
-					dj.setSpringFrequency(2);
-					dj.setSpringDampingRatio(1.0);
-					world.addJoint(dj);
+		if (this.organize.isActiveButNotHandled()) {
+			this.organize.setHasBeenHandled(true);
+			
+			if (!this.jointsAdded) {
+				this.jointsAdded = true;
+				Random r = new Random(44);
+				Map<String, Boolean> used = new HashMap<String, Boolean>();
+				for (int i = 0; i < 10; i++) {
+					int n = r.nextInt(19);
+					int m = r.nextInt(19);
+					String name = (n < m ? n : m) + "," + (n > m ? n : m);
+					if (n != m && !used.containsKey(name)) {
+						used.put(name, true);
+						SimulationBody b1 = this.bodies.get(n);
+						SimulationBody b2 = this.bodies.get(m);
+	
+						DistanceJoint<SimulationBody> dj = new DistanceJoint<SimulationBody>(b1, b2, b1.getWorldCenter(), b2.getWorldCenter());
+						dj.setCollisionAllowed(true);
+						dj.setRestDistance(0.0);
+						dj.setSpringEnabled(true);
+						dj.setSpringDamperEnabled(true);
+						dj.setSpringFrequency(2);
+						dj.setSpringDampingRatio(1.0);
+						this.world.addJoint(dj);
+					}
 				}
+			} else {
+				this.world.removeAllJoints();
+				this.jointsAdded = false;
 			}
-		} else if (jointsAdded) {
-			// once we've joined the bodies, re-enable picking/panning
-			this.setMousePanningEnabled(true);
-			this.setMousePickingEnabled(true);
 		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#reset()
+	 */
+	@Override
+	public void reset() {
+		super.reset();
+		this.jointsAdded = false;
 	}
 	
 	/**

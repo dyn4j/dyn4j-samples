@@ -25,49 +25,69 @@
 package org.dyn4j.samples.framework.input;
 
 import java.awt.Component;
+import java.awt.Point;
 
-public class BooleanStateKeyboardInputHandler extends AbstractKeyboardInputHandler {
-	/** If the key state is active (pressed) */
-	private boolean active;
+public final class BooleanStateMouseInputHandler extends AbstractMouseInputHandler {
+	private final Object lock;
 	
-	/** True if the active state has been handled */
+	private boolean active;
+	private Point location;
 	private boolean hasBeenHandled;
 	
-	public BooleanStateKeyboardInputHandler(Component component, Key... keys) {
-		super(component, keys);
-		this.active = false;
-		this.hasBeenHandled = false;
-	}
-	
-	public BooleanStateKeyboardInputHandler(Component component, int... keys) {
-		super(component, keys);
-		this.active = false;
-		this.hasBeenHandled = false;
+	public BooleanStateMouseInputHandler(Component component, int button) {
+		super(component, button);
+		this.lock = new Object();
 	}
 
 	@Override
-	protected void onKeyPressed() {
-		super.onKeyPressed();
-		
-		// save the old state
-		boolean active = this.active;
-		
-		// set the state to active
-		this.active = true;
-		
-		// if the state transitioned from inactive to active
-		// flag that it needs to be handled
-		if (!active) {
-			this.hasBeenHandled = false;
+	protected void onMousePressed(Point point) {
+		super.onMousePressed(point);
+		synchronized (this.lock) {
+			boolean active = this.active;
+			
+			this.active = true;
+			this.location = point;
+
+			// if the state transitioned from inactive to active
+			// flag that it needs to be handled
+			if (!active) {
+				this.hasBeenHandled = false;
+			}
+		}
+	}
+
+	@Override
+	protected void onMouseRelease() {
+		this.active = false;
+		super.onMouseRelease();
+	}
+
+	@Override
+	public void setEnabled(boolean flag) {
+		super.setEnabled(flag);
+		if (!flag) {
+			this.clearState();
 		}
 	}
 	
 	@Override
-	protected void onKeyReleased() {
-		super.onKeyReleased();
-		this.active = false;
+	public void uninstall() {
+		super.uninstall();
+		this.clearState();
 	}
 	
+	private void clearState() {
+		this.active = false;
+		this.location = null;
+		this.hasBeenHandled = false;
+	}
+	
+	public Point getMouseLocation() {
+		synchronized (this.lock) {
+			return this.location;
+		}
+	}
+
 	@Override
 	public boolean isActive() {
 		return this.active;

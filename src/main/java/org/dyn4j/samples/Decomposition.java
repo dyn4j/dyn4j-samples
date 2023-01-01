@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2022 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -34,6 +34,7 @@ import org.dyn4j.geometry.decompose.Bayazit;
 import org.dyn4j.geometry.decompose.Decomposer;
 import org.dyn4j.geometry.decompose.EarClipping;
 import org.dyn4j.geometry.decompose.SweepLine;
+import org.dyn4j.samples.framework.Camera;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
 
@@ -43,7 +44,7 @@ import org.dyn4j.samples.framework.SimulationFrame;
  * <p>
  * NOTE: Please review the definition of <a href="https://en.wikipedia.org/wiki/Simple_polygon">Simple Polygon</a>.
  * @author William Bittle
- * @since 4.1.1
+ * @since 5.0.0
  * @version 4.1.1
  */
 public class Decomposition extends SimulationFrame {
@@ -54,9 +55,7 @@ public class Decomposition extends SimulationFrame {
 	 * Default constructor.
 	 */
 	public Decomposition() {
-		super("Decomposition", 64.0);
-		
-		this.setOffsetY(-200);
+		super("Decomposition");
 	}
 	
 	/* (non-Javadoc)
@@ -199,6 +198,16 @@ public class Decomposition extends SimulationFrame {
 	    j.translate(new Vector2(0.8752422480620154, 0.4841370269037847));
 	    j.setMass(MassType.NORMAL);
 	    world.addBody(j);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#initializeCamera(org.dyn4j.samples.framework.Camera)
+	 */
+	@Override
+	protected void initializeCamera(Camera camera) {
+		super.initializeCamera(camera);
+		camera.scale = 64.0;
+		camera.offsetY = -200.0;
 	}
 	
 	/**

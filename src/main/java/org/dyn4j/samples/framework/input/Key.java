@@ -24,63 +24,23 @@
  */
 package org.dyn4j.samples.framework.input;
 
-import java.awt.Component;
-
-public class BooleanStateKeyboardInputHandler extends AbstractKeyboardInputHandler {
-	/** If the key state is active (pressed) */
-	private boolean active;
+/**
+ * Represents a key code and modifiers.
+ * @author William Bittle
+ * @since 5.0.0
+ * @version 5.0.0
+ */
+public final class Key {
+	public final int key;
+	public final int modifiers;
 	
-	/** True if the active state has been handled */
-	private boolean hasBeenHandled;
-	
-	public BooleanStateKeyboardInputHandler(Component component, Key... keys) {
-		super(component, keys);
-		this.active = false;
-		this.hasBeenHandled = false;
+	public Key(int key) {
+		this.key = key;
+		this.modifiers = 0;
 	}
 	
-	public BooleanStateKeyboardInputHandler(Component component, int... keys) {
-		super(component, keys);
-		this.active = false;
-		this.hasBeenHandled = false;
-	}
-
-	@Override
-	protected void onKeyPressed() {
-		super.onKeyPressed();
-		
-		// save the old state
-		boolean active = this.active;
-		
-		// set the state to active
-		this.active = true;
-		
-		// if the state transitioned from inactive to active
-		// flag that it needs to be handled
-		if (!active) {
-			this.hasBeenHandled = false;
-		}
-	}
-	
-	@Override
-	protected void onKeyReleased() {
-		super.onKeyReleased();
-		this.active = false;
-	}
-	
-	@Override
-	public boolean isActive() {
-		return this.active;
-	}
-	
-	public boolean isActiveButNotHandled() {
-		if (this.hasBeenHandled)
-			return false;
-		
-		return this.active;
-	}
-	
-	public void setHasBeenHandled(boolean hasBeenHandled) {
-		this.hasBeenHandled = hasBeenHandled;
+	public Key(int key, int modifiers) {
+		this.key = key;
+		this.modifiers = modifiers;
 	}
 }

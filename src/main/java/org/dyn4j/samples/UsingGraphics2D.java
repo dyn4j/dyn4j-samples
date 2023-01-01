@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2022 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -34,6 +34,7 @@ import org.dyn4j.geometry.Rectangle;
 import org.dyn4j.geometry.Slice;
 import org.dyn4j.geometry.Triangle;
 import org.dyn4j.geometry.Vector2;
+import org.dyn4j.samples.framework.Camera;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
 
@@ -43,7 +44,7 @@ import org.dyn4j.samples.framework.SimulationFrame;
  * <p>
  * This class can be used as a starting point for projects.
  * @author William Bittle
- * @version 4.1.1
+ * @version 5.0.0
  * @since 3.0.0
  */
 public class UsingGraphics2D extends SimulationFrame {
@@ -54,7 +55,7 @@ public class UsingGraphics2D extends SimulationFrame {
 	 * Default constructor for the window
 	 */
 	public UsingGraphics2D() {
-		super("Graphics2D Example", 45.0);
+		super("Graphics2D Example");
 		
 	}
 	
@@ -168,6 +169,15 @@ public class UsingGraphics2D extends SimulationFrame {
 		slice.setMass(MassType.NORMAL);
 		slice.translate(-3.0, 3.0);
 		this.world.addBody(slice);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#initializeCamera(org.dyn4j.samples.framework.Camera)
+	 */
+	@Override
+	protected void initializeCamera(Camera camera) {
+		super.initializeCamera(camera);
+		camera.scale = 45.0;
 	}
 	
 	/**

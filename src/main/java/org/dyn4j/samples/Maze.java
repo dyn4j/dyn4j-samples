@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2022 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -34,6 +34,7 @@ import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Transform;
 import org.dyn4j.geometry.Vector2;
+import org.dyn4j.samples.framework.Camera;
 import org.dyn4j.samples.framework.SimulationBody;
 import org.dyn4j.samples.framework.SimulationFrame;
 import org.dyn4j.world.World;
@@ -43,7 +44,7 @@ import org.dyn4j.world.World;
  * the green body tries to work around the obstacles, but does not go
  * through them.
  * @author William Bittle
- * @since 4.1.1
+ * @since 5.0.0
  * @version 4.1.1
  */
 public class Maze extends SimulationFrame {
@@ -73,7 +74,7 @@ public class Maze extends SimulationFrame {
 	 * Default constructor for the window
 	 */
 	public Maze() {
-		super("Maze", 16.0);
+		super("Maze");
 		
 		this.setMousePickingEnabled(false);
 		
@@ -169,6 +170,15 @@ public class Maze extends SimulationFrame {
 		    wall5.translate(0 + (i + 7) * pathWidth, (i % 2 == 0 ? -1 : 1) * pathWidth / 2.0);
 		    this.world.addBody(wall5);
 	    }
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#initializeCamera(org.dyn4j.samples.framework.Camera)
+	 */
+	@Override
+	protected void initializeCamera(Camera camera) {
+		super.initializeCamera(camera);
+		camera.scale = 16.0;
 	}
 	
 	/* (non-Javadoc)
