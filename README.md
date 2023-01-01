@@ -23,6 +23,6 @@ A collection of samples that use the dyn4j library in a variety of ways
 | [Tank](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Tank.java) | A top down tank simulation | Raycasting, Player Control, FrictionJoint, RevoluteJoint |
 | [Thrust](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Thrust.java) | A side view of a scene with a rocket | Applying Forces |
 | [Tracking](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Tracking.java) | A scene where contact tracking is printed to the console | Contact Tracking |
-| [Truck](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Truck.java) | A scene where a truck filled with boxes moves through a world | RevoluteJoint, Fixture Composition |
+| [Truck](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Truck.java) | A scene where a truck filled with boxes moves through a world | WheelJoint, Fixture Composition |
 | [UsingGraphics2D](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/UsingGraphics2D.java) | A scene with just a bunch of shapes rendered via Java 2D | Java 2D |
 | [UsingJogl](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/UsingJogl.java) | A scene with a few shapes rendered via OpenGL via JOGL | JOGL |
