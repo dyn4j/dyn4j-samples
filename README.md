@@ -4,7 +4,7 @@ A collection of samples that use the dyn4j library in a variety of ways
 | Sample | Description | Concepts |
 | --- | --- | --- |
 | [BasketBall](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/BasketBall.java) | A side view basketball game | Player Input, DistanceJoint, RevoluteJoint, Image Mapping/Texturing, Filtering, Bounds Listening |
-| [Billiards](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Billiards.java) | A top down billiards simulation | Density, Friction, Damping |
+| [Billiards](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Billiards.java) | A top down billiards simulation | Density, Friction, Damping, Player Input |
 | [Bowling](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Bowling.java) | A side view of a bowling ball hitting pins | Density, Friction, Restitution, CategoryFilter |
 | [Bridge](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Bridge.java) | A side view of a bridge made from joined bodies | RevoluteJoint |
 | [Bucket](https://github.com/dyn4j/dyn4j-samples/tree/master/src/main/java/org/dyn4j/samples/Bucket.java) | A side view of a bucket with 200 random objects | Larger world |

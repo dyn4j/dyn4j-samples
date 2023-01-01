@@ -299,31 +299,36 @@ public final class Billiards extends SimulationFrame {
 	protected void handleEvents() {
 		super.handleEvents();
 		
-		if (this.left.isActive()) {
-			this.angle += 0.005;
-		}
-		if (this.right.isActive()) {
-			this.angle -= 0.005;
-		}
-		if (this.plus.isActive()) {
-			this.power += 0.005;
-		}
-		if (this.minus.isActive()) {
-			this.power -= 0.005;
-			if (this.power <= 0.0) {
-				this.power = 0.0;
+		if (allBallsAtRest()) {
+			if (this.left.isActive()) {
+				this.angle += 0.005;
 			}
-		}
-		
-		if (this.shoot.isActiveButNotHandled()) {
-			this.shoot.setHasBeenHandled(true);
 			
-			if (this.power > 0.0) {
-				Vector2 v = new Vector2(this.cueStick.getTransform().getRotationAngle());
-				v.multiply(this.power * 10.0);
-				this.cueBall.setAtRest(false);
-				this.cueBall.setLinearVelocity(v);
-				this.power = 0.0;
+			if (this.right.isActive()) {
+				this.angle -= 0.005;
+			}
+			
+			if (this.plus.isActive()) {
+				this.power += 0.005;
+			}
+			
+			if (this.minus.isActive()) {
+				this.power -= 0.005;
+				if (this.power <= 0.0) {
+					this.power = 0.0;
+				}
+			}
+			
+			if (this.shoot.isActiveButNotHandled()) {
+				this.shoot.setHasBeenHandled(true);
+
+				if (this.power > 0.0) {
+					Vector2 v = new Vector2(this.cueStick.getTransform().getRotationAngle());
+					v.multiply(this.power * 10.0);
+					this.cueBall.setAtRest(false);
+					this.cueBall.setLinearVelocity(v);
+					this.power = 0.0;
+				}
 			}
 		}
 	}
