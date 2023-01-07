@@ -293,6 +293,18 @@ public final class Billiards extends SimulationFrame {
 	}
 	
 	/* (non-Javadoc)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#reset()
+	 */
+	@Override
+	public void reset() {
+		super.reset();
+		
+		this.angle = 0.0;
+		this.power = 0.0;
+		this.stickLocation.zero();
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.dyn4j.samples.framework.SimulationFrame#handleEvents()
 	 */
 	@Override

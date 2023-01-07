@@ -188,6 +188,15 @@ public class Truck extends SimulationFrame {
 	}
 	
 	/* (non-Javadoc)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#reset()
+	 */
+	@Override
+	public void reset() {
+		super.reset();
+		this.speed = 0.0;
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.dyn4j.samples.framework.SimulationFrame#handleEvents()
 	 */
 	@Override

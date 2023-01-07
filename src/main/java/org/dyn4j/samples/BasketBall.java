@@ -421,10 +421,14 @@ public class BasketBall extends SimulationFrame {
 		return body.getUserData() == SCORE_COMPLETE_IDENTIFIER;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.dyn4j.samples.framework.SimulationFrame#reset()
+	 */
 	@Override
 	public void reset() {
 		super.reset();
 		this.score = 0;
+		// other stuff gets reset in initializeWorld
 	}
 	
 	/* (non-Javadoc)
