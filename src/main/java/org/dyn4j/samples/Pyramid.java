@@ -52,6 +52,9 @@ public class Pyramid extends SimulationFrame {
 	 * @see org.dyn4j.samples.framework.SimulationFrame#initializeWorld()
 	 */
 	protected void initializeWorld() {
+		// allow for better/more stable stacking
+		world.getSettings().setVelocityConstraintSolverIterations(10);
+		
 		SimulationBody ground = new SimulationBody();
 		ground.addFixture(Geometry.createRectangle(15.0, 1.0));
 	    ground.setMass(MassType.INFINITE);

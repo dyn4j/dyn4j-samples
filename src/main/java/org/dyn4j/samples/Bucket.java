@@ -55,6 +55,10 @@ public class Bucket extends SimulationFrame {
 	 * Creates game objects and adds them to the world.
 	 */
 	protected void initializeWorld() {
+//		world.getSettings().setStepFrequency(1.0/30.0);
+//		world.getSettings().setPositionConstraintSolverIterations(10);
+//		world.getSettings().setVelocityConstraintSolverIterations(10);
+		
 	    // Bottom
 		SimulationBody bucketBottom = new SimulationBody();
 		bucketBottom.addFixture(Geometry.createRectangle(15.0, 1.0));
@@ -79,11 +83,11 @@ public class Bucket extends SimulationFrame {
 	    double xmin = -7.0;
 	    double xmax = 7.0;
 	    double ymin = 0.5;
-	    double ymax = 7.0;
+	    double ymax = 20.0;
 	    double maxSize = 0.6;
 	    double minSize = 0.2;
 	    
-	    for (int i = 0; i < 200; i++) {
+	    for (int i = 0; i < 1000; i++) {
 	    	double size = r.nextDouble() * maxSize + minSize;
 	    	
 	    	Convex c = null;
@@ -117,6 +121,7 @@ public class Bucket extends SimulationFrame {
 	protected void initializeCamera(Camera camera) {
 		super.initializeCamera(camera);
 		camera.scale = 32.0;
+		camera.offsetY = -200;
 	}
 	
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2023 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -57,12 +57,12 @@ import org.dyn4j.dynamics.joint.PinJoint;
 import org.dyn4j.geometry.AABB;
 import org.dyn4j.geometry.Transform;
 import org.dyn4j.geometry.Vector2;
-import org.dyn4j.samples.framework.input.ToggleStateKeyboardInputHandler;
 import org.dyn4j.samples.framework.input.BooleanStateKeyboardInputHandler;
 import org.dyn4j.samples.framework.input.CodeExporter;
 import org.dyn4j.samples.framework.input.MousePanningInputHandler;
 import org.dyn4j.samples.framework.input.MousePickingInputHandler;
 import org.dyn4j.samples.framework.input.MouseZoomInputHandler;
+import org.dyn4j.samples.framework.input.ToggleStateKeyboardInputHandler;
 import org.dyn4j.world.World;
 import org.dyn4j.world.WorldCollisionData;
 
@@ -70,7 +70,7 @@ import org.dyn4j.world.WorldCollisionData;
 
 /**
  * A simple framework for building samples.
- * @version 5.0.0
+ * @version 5.0.2
  * @since 3.2.0
  */
 public abstract class SimulationFrame extends JFrame {
@@ -120,7 +120,7 @@ public abstract class SimulationFrame extends JFrame {
 	private final ToggleStateKeyboardInputHandler renderBounds;
 	
 	private final ToggleStateKeyboardInputHandler printStepNumber;
-	private final ToggleStateKeyboardInputHandler printSimulation; 
+	private final ToggleStateKeyboardInputHandler printSimulation;
 	
 	/**
 	 * Constructor.
@@ -356,9 +356,12 @@ public abstract class SimulationFrame extends JFrame {
 
         // update the World
 		if (!this.paused.isActive()) {
+//			long s = System.nanoTime();
 	        boolean stepped = this.world.update(elapsedTime);
+//	        long e = System.nanoTime();
 	        if (stepped) {
 	        	this.stepNumber++;
+//	        	System.out.println(((e - s) / 1000000.0) + " ms");
 	        }
 		} else if (this.step.isActive()) {
 			this.world.step(1);
@@ -549,18 +552,36 @@ public abstract class SimulationFrame extends JFrame {
 				// draw the contact point
 				final double r = 2.5 / this.camera.scale;
 				final double d = r * 2;
-				Ellipse2D.Double cp = new Ellipse2D.Double((c.getPoint().x - r) * this.camera.scale, (c.getPoint().y - r) * this.camera.scale, d * this.camera.scale, d * this.camera.scale);
+				Rectangle2D.Double cp = new Rectangle2D.Double(
+						(c.getPoint().x - r) * this.camera.scale, 
+						(c.getPoint().y - r) * this.camera.scale, 
+						d * this.camera.scale, 
+						d * this.camera.scale);
 				g.setColor(Color.ORANGE);
 				g.fill(cp);
 				
 				// check for sensor/enabled
 				if (!cc.isSensor() && cc.isEnabled()) {
+					// NOTE: really you'd convert the impulse to force by
+					// multiplying by the inverse delta time, but these forces
+					// are quite large, so I'm just showing the impulse and 
+					// reducing it so that it looks better for rendering
+					
 					// draw the contact normal
+					double vnd = c.getNormalImpulse() / 2.0;
 					Line2D.Double vn = new Line2D.Double(
 							c.getPoint().x * this.camera.scale, c.getPoint().y * this.camera.scale, 
-							(c.getPoint().x - cc.getNormal().x * c.getDepth() * 100) * this.camera.scale, (c.getPoint().y - cc.getNormal().y * c.getDepth() * 100) * this.camera.scale);
+							(c.getPoint().x - cc.getNormal().x * vnd) * this.camera.scale, (c.getPoint().y - cc.getNormal().y * vnd) * this.camera.scale);
 					g.setColor(Color.BLUE);
 					g.draw(vn);
+					
+					// draw the contact tangent
+					double vtd = c.getTangentialImpulse() / 2.0;
+					Line2D.Double vt = new Line2D.Double(
+							c.getPoint().x * this.camera.scale, c.getPoint().y * this.camera.scale, 
+							(c.getPoint().x - cc.getTangent().x * vtd) * this.camera.scale, (c.getPoint().y - cc.getTangent().y * vtd) * this.camera.scale);
+					g.setColor(Color.RED);
+					g.draw(vt);
 				}
 			}
 		}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2023 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -85,7 +85,7 @@ import org.dyn4j.world.World;
 /**
  * A simple example of how you might serialize the state of a world.
  * @author William Bittle
- * @version 5.0.0
+ * @version 5.0.2
  * @since 4.1.1
  */
 public class CodeExporter {
@@ -468,10 +468,10 @@ public class CodeExporter {
 		if (settings.getMinimumAtRestTime() != Settings.DEFAULT_MINIMUM_AT_REST_TIME) {
 			sb.append(TAB2).append("settings.setMinimumAtRestTime(").append(settings.getMinimumAtRestTime()).append(");").append(NEW_LINE);
 		}
-		if (settings.getVelocityConstraintSolverIterations() != Settings.DEFAULT_SOLVER_ITERATIONS) {
+		if (settings.getVelocityConstraintSolverIterations() != Settings.DEFAULT_VELOCITY_CONSTRAINT_SOLVER_ITERATIONS) {
 			sb.append(TAB2).append("settings.setVelocityConstraintSolverIterations(").append(settings.getVelocityConstraintSolverIterations()).append(");").append(NEW_LINE);
 		}
-		if (settings.getPositionConstraintSolverIterations() != Settings.DEFAULT_SOLVER_ITERATIONS) {
+		if (settings.getPositionConstraintSolverIterations() != Settings.DEFAULT_POSITION_CONSTRAINT_SOLVER_ITERATIONS) {
 			sb.append(TAB2).append("settings.setPositionConstraintSolverIterations(").append(settings.getPositionConstraintSolverIterations()).append(");").append(NEW_LINE);
 		}
 		if (settings.getMaximumWarmStartDistance() != Settings.DEFAULT_MAXIMUM_WARM_START_DISTANCE) {
