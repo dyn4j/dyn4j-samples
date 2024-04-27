@@ -357,14 +357,23 @@ public class BasketBall extends SimulationFrame {
 				SimulationBody b1 = collision.getBody1();
 				SimulationBody b2 = collision.getBody2();
 				
-				if (isBall(b1) && isScoreBegin(b2)) {
-					BallUserData bud = (BallUserData)b1.getUserData();
+				// check for a ball body
+				int ballBodyIndex = getBallBodyIndex(b1, b2);
+				if (ballBodyIndex < 0)
+					return super.collision(collision);
+				
+				// get the ball and the other body
+				SimulationBody ball = ballBodyIndex == 1 ? b1 : b2;
+				SimulationBody other = ballBodyIndex == 1 ? b2 : b1;
+				
+				if (isScoreBegin(other)) {
+					BallUserData bud = (BallUserData)ball.getUserData();
 					if (!bud.scored) {
 						bud.enteredScoreBegin = true;
 						bud.enteredScoreComplete = false;
 					}
-				} else if (isBall(b1) && isScoreComplete(b2)) {
-					BallUserData bud = (BallUserData)b1.getUserData();
+				} else if (isScoreComplete(other)) {
+					BallUserData bud = (BallUserData)ball.getUserData();
 					if (!bud.scored && bud.enteredScoreBegin) {
 						bud.enteredScoreComplete = true;
 					} else {
@@ -383,8 +392,19 @@ public class BasketBall extends SimulationFrame {
 				SimulationBody b1 = collision.getBody1();
 				SimulationBody b2 = collision.getBody2();
 				
-				if (isBall(b1) && isScoreComplete(b2)) {
-					BallUserData bud = (BallUserData)b1.getUserData();
+				// check for a ball body
+				int ballBodyIndex = getBallBodyIndex(b1, b2);
+				if (ballBodyIndex < 0) {
+					super.end(collision, contact);
+					return;
+				}
+				
+				// get the ball and the other body
+				SimulationBody ball = ballBodyIndex == 1 ? b1 : b2;
+				SimulationBody other = ballBodyIndex == 1 ? b2 : b1;
+				
+				if (isScoreComplete(other)) {
+					BallUserData bud = (BallUserData)ball.getUserData();
 					// 1. if the ball hasn't been scored yet
 					// 2. if the ball entered the score begin region
 					// 3. if the ball entered the score complete region
@@ -407,6 +427,10 @@ public class BasketBall extends SimulationFrame {
 			}
 		};
 		this.world.addContactListener(ccl);
+	}
+	
+	private int getBallBodyIndex(SimulationBody body1, SimulationBody body2) {
+		return isBall(body1) ? 1 : isBall(body2) ? 2 : -1;
 	}
 	
 	private boolean isBall(SimulationBody body) {
