@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022 William Bittle  http://www.dyn4j.org/
+ * Copyright (c) 2010-2026 William Bittle  http://www.dyn4j.org/
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -36,7 +36,7 @@ import org.dyn4j.geometry.Convex;
 /**
  * Custom Body class to add drawing functionality.
  * @author William Bittle
- * @version 3.2.1
+ * @version 6.0.0
  * @since 3.0.0
  */
 public class SimulationBody extends Body {
@@ -56,6 +56,16 @@ public class SimulationBody extends Body {
 	 */
 	public SimulationBody(Color color) {
 		this.color = color;
+	}
+	
+	/**
+	 * Copy constructor.
+	 * @param body the body to copy
+	 * @since 6.0.0
+	 */
+	protected SimulationBody(SimulationBody body) {
+		super(body);
+		this.color = body.color;
 	}
 
 	/**
@@ -146,5 +156,14 @@ public class SimulationBody extends Body {
 	 */
 	public void setColor(Color color) {
 		this.color = color;
+	}
+	
+	/**
+	 * Override the copy method.
+	 * @since 6.0.0
+	 */
+	@Override
+	public SimulationBody copy() {
+		return new SimulationBody(this);
 	}
 }
